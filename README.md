@@ -1,1 +1,346 @@
+# `QC_gates_notes.pdf` — Complete Walkthrough & Figure Guide
+
+**File:** `vertopal.com_QC_gates_notes.pdf` — 134 pages, 186 embedded figures (a Jupyter notebook exported/printed to PDF).
+**What it is:** *"Quantum Gates — Interactive Companion Notebook (with Visualizations, Circuits & Measurements)"* — a Qiskit-based lab companion to Chapter 3 (**Quantum Gates**) and selected parts of Chapter 4 (**Deutsch's algorithm, QFT**) of a lecture-notes PDF.
+**Environment used:** Python 3.13 (Anaconda), Qiskit **2.5.2**, qiskit-aer **0.17.2**, matplotlib 3.10.7, numpy 2.3.5.
+
+---
+
+## 0. The big idea of the notebook
+
+The lecture notes contain the *theory* (equations Eq. 3.1 … 3.178, Fig. 3.10 … 3.15). This notebook is the **experimental counterpart**: for almost every equation in those chapters it does three things —
+
+1. **Builds the circuit** in Qiskit and draws it with the matplotlib circuit drawer (`style={'name':'bw'}` → the black-and-white boxes you see everywhere).
+2. **Visualises the state** on the Bloch sphere / state-city / Q-sphere, or plots the amplitude/phase directly with matplotlib.
+3. **Measures it** — appends `measure_all()`, runs on `AerSimulator` (2048 or 4096 shots), and shows a **counts histogram**. This turns every mathematical claim into an observable experimental result (probabilities, phases made visible, truth tables, no-cloning failure, etc.).
+
+It is deliberately organised to *mirror the notes' section numbering* (3.1.1, 3.1.2, 3.1.3, 3.1.4, 3.1.5, 3.1.7, 3.2, 4.1.1, 4.6), and it ends with a mapping table and student exercises.
+
+### How to read the rest of this document
+
+* Each numbered section below = one notebook section, with **what the code does**, **what the printed numbers mean**, and **what each figure shows**.
+* Page references are to the PDF pages (e.g. p. 11) so you can jump straight there.
+* At the end there is a **figure-type index**, an **honest review of bugs/subtleties** I found by re-running the physics, and notes for re-running the notebook.
+
+---
+
+## 1. Front matter and setup (p. 1 – 4)
+
+**Contents**
+* Title, provenance (based on `QC_notes_gates.pdf`, Chapter 3 + part of Chapter 4), and credits: IBM Qiskit Community tutorials, *Coding With Qiskit* ep. 4 (Gates), *Teach Me Quantum* 2018, Qiskit/qiskit-tutorials, IBM Quantum Learning.
+* The `pip install qiskit qiskit-aer matplotlib numpy pylatexenc` cell **including all its console output** (that's why pages 1–2 are full of "Requirement already satisfied") — typical of an exported notebook where output was never cleared.
+* A numbered reference list.
+
+**The toolkit cell (p. 2–4)** imports `numpy`, `matplotlib`, `QuantumCircuit`, `transpile`, and from `qiskit.quantum_info`: `Statevector`, `Operator`, `DensityMatrix`, `state_fidelity`; from `qiskit.visualization`: `plot_bloch_multivector`, `plot_bloch_vector`, `plot_histogram`, `plot_state_city`, `plot_state_qsphere`; from `qiskit.circuit.library`: `QFT`, `UnitaryGate`, `MCXGate`. `AerSimulator` is wrapped in a `try/except` so the notebook still runs (minus measurement cells) if Aer is missing. It prints `Qiskit environment ready. Aer available: True`.
+
+**Section 0 — Visualisation Toolkit (p. 3–4)**, four helper functions reused everywhere:
+
+| Helper | What it does |
+|---|---|
+| `show_circuit(qc, title)` | `qc.draw('mpl', style={'name':'bw'})` + optional title → circuit picture |
+| `show_bloch(sv, title)` | `plot_bloch_multivector(sv)` → one Bloch sphere per qubit |
+| `measure_and_plot(qc, shots=2048, title)` | copies `qc`, calls `measure_all()`, `transpile`s, runs on Aer, returns `(counts, histogram_figure, measured_circuit)` |
+| `compare_bloch(sv_in, sv_out, …)` | intended as a side-by-side before/after Bloch figure |
+| `bloch_angles(sv)` (defined later, p. 15) | converts a statevector into the Bloch angles θ, φ via the density matrix: `x=2Re ρ₀₁`, `y=2Im ρ₁₀`, `z=ρ₀₀−ρ₁₁` |
+
+> **Note:** `compare_bloch` is effectively dead code — it creates a 2-axis figure, immediately `plt.close`s it, then returns two *separate* figures. The notebook never actually uses it (the before/after comparisons are done as two `show_bloch` calls instead). It's harmless but a leftover.
+
+---
+
+## 2. Section 1 — The general single-qubit gate (Eq. 3.1 – 3.8) — p. 4 – 9
+
+### 2.1 The physics being tested
+Any single-qubit evolution with Hamiltonian `H = h₀·I + β n·σ` gives, up to global phase,
+`U = exp(iα)·Rn(η)`, with `Rn(η) = cos(η/2)·I − i sin(η/2)(n·σ)` (Eq. 3.6–3.8). `Rn(η)` **rotates the Bloch vector by η anticlockwise about axis n**.
+
+### 2.2 What the code does
+* Defines `Rn_matrix(n, eta)` — literally implements Eq. 3.8 with the three Pauli matrices. This is the "theory" version.
+* Defines `equal_up_to_phase(A, B)` — checks two unitaries are equal modulo a global phase (needed because Qiskit's `Rz` is the notes' `Rn` *only up to phase*).
+* Builds `Rz(0.7)` in Qiskit and compares its `Operator` matrix with `Rn_matrix([0,0,1], 0.7)`.
+
+**Printed result (p. 5):** both matrices are `diag(0.939−0.343i, 0.939+0.343i)` → `Match: True`. So **Qiskit's `Rz(η)` = the notes' `Rn(η)` about n = ẑ**.
+
+### 2.3 Z-basis vs X-basis measurement (p. 5 – 9)
+Circuits: `H` then `Rz(π/2)`; and the same followed by another `H` before measurement.
+
+* Figure (p. 5–6, 2 blocks): **circuit diagram** `q: ─H─Rz(π/2)─` — a state-prep H (to make |+⟩) and the phase gate, plus a second circuit `─H─Rz(π/2)─H─M─` for the basis-change version.
+* **Figure — "Z-basis measurement: 50/50, Rz phase invisible here" (p. 7):** two bars ≈ 1002 and 1046 out of 2048. This is the central lesson of phase gates: `Rz` multiplies a *relative phase*, and a Z-basis measurement cannot see relative phase, so the statistics are an uninformative 50/50.
+* **Figure — "X-basis measurement: Rz phase now visible" (p. 8):** again ≈ 1032/1016 — still ~50/50 because π/2 happens to be a special angle; but the *point* (that the H before detection rotates phase information into Z-basis probabilities) is made by the two circuits shown on p. 9 ("Full circuit with basis-change + measurement" — H, Rz, barrier, H, measure, showing both the `meas` register and how the measurement is attached).
+
+**Take-away:** the notebook immediately establishes the theme it returns to repeatedly — *phases are invisible unless you interfere them.*
+
+---
+
+## 3. Section 1.1 — Rn(η) ⇔ rotation of the Bloch vector (Eq. 3.9 – 3.21) — p. 10 – 19
+
+Checks two of the notes' identities by watching the Bloch pointer move:
+
+* `Rz(η)|θ,φ⟩ = |θ, φ+η⟩` (Eq. 3.13–3.15)
+* `Rx(η)|θ,π/2⟩ = |θ−η, π/2⟩` (Eq. 3.19–3.21)
+
+**Rz experiment (θ = π/3, φ = π/5, η = π/2):**
+* Circuit (p. 11): `q: ─Ry(π/3)─Rz(π/5)─` labelled *"State-preparation circuit for |θ,φ⟩"* — note it uses `Ry` to set θ and `Rz` to set φ, the standard way to reach any `|θ,φ⟩`.
+* **Bloch sphere "Before Rz(eta)" (p. 12):** the whole sphere is tilted so that the north pole reads `|0⟩` (that is the state-prep `Rz(π/5)` — exactly the φ-shift the notes predict); then the notebook applies `Rz(η)`.
+* Circuit (p. 13–14): `─Ry(π/3)─Rz(π/5)─Rz(π/2)─`.
+* **Bloch sphere "After Rz(eta)" (p. 15):** the arrow points at the **equator**, i.e. θ is unchanged and only the azimuth moved. This is the graphic proof of Eq. 3.13–3.15.
+* Printed check (p. 15): `θ: 1.047 → 1.047 (unchanged)` and `φ: 0.628 → 2.199 = φ + η mod 2π`. ✔
+
+**Rx experiment (θ = 2π/5, φ = π/2, η = π/4):**
+* Circuit (p. 16): `─Ry(2π/5)─Rz(π/2)─Rx(π/4)─`.
+* **Bloch sphere "Before Rx(eta)" (p. 18):** arrow on the −x axis, in the y–z plane (φ = π/2) — expected from `Ry`+`Rz(π/2)`.
+* **Bloch sphere "After Rx(eta)" (p. 19):** arrow now tilted up toward the north pole/​+z direction — a rotation about the x-axis, so the y-component has vanished: the state has left the equator.
+* Printed check (p. 16): `θ: 1.257 → 0.471 = θ − η` ✔ and `φ: 1.571 → 1.571` (unchanged, = π/2) ✔.
+
+This is the cleanest "one row of figures = one equation" demonstration in the whole notebook.
+
+---
+
+## 4. Section 2 — The elementary single-qubit gates (Sec. 3.1.2) — p. 20 – 39
+
+A single generic helper, `gate_report(name, build_fn, eq_ref, input_label)`, produces for each gate: circuit drawing → the gate **matrix** → the output **statevector** → the **Bloch sphere** of `G|input⟩`. Then, separately, a **measurement histogram**.
+
+### 4.1 X gate (Eq. 3.28–3.31) — p. 20 – 25
+* Circuit (p. 21, 23): `q: ─X─`; matrix `[[0,1],[1,0]]`; `X|0⟩ = |1⟩` (p. 22).
+* **Bloch sphere "X|0⟩ on Bloch sphere" (p. 22):** arrow points straight **down** to `|1⟩` at the south pole — the π-rotation about x.
+* **Measurement circuit (p. 23):** `─X─ ▧ ─M─` (gate + measurement box) and the **histogram (p. 24–25) "X|0⟩ measurement: always 1"** — one bar of height **2048/2048**. Because `X|0⟩` is a computational basis state, measurement is deterministic: the classic "single spike" signature.
+
+### 4.2 Y gate (Eq. 3.32–3.35) — p. 25 – 26
+* Matrix `[[0,−i],[i,0]]`, `Y|0⟩ = i|1⟩`.
+* **Bloch sphere "Y|0⟩" (p. 26):** again straight down to `|1⟩` — because `Y|0⟩ = i|1⟩` differs from `|1⟩` by the global phase `i`, which the Bloch sphere (correctly) cannot show. A neat, non-obvious illustration that global phase is unobservable.
+
+### 4.3 Z gate (Eq. 3.36–3.39) — p. 27 – 30
+* Input chosen as `|1⟩`: matrix `diag(1,−1)`, `Z|1⟩ = −|1⟩`.
+* **Bloch sphere "Z|1⟩" (p. 28–29):** looks exactly like plain `|1⟩` — the minus sign is a *global* phase for this input.
+* The notebook then does the **H–Z–H trick (p. 30):** `─H─Z─H─` converts the invisible phase flip into a bit flip: `HZH|0⟩ = |1⟩`.
+* **Histogram (p. 31) "H–Z–H |0⟩: should measure |1⟩ deterministically"** — single bar at `1`, 2048/2048. This is the first *interference* demonstration in the notebook.
+
+### 4.4 T (π/8) gate (Eq. 3.40–3.43) — p. 31 – 33
+* Input `|1⟩`; matrix `diag(1, e^{iπ/4})`, i.e. `T|1⟩ = (0.707+0.707i)|1⟩`.
+* The code independently rebuilds the notes' formula `T = e^{iπ/8}(cos(π/8)·I − i sin(π/8)·Z)` and prints **"Matches Qiskit T gate: True"** (p. 32). This is exactly the "π/8 gate" naming justification *and* the statement that `T` is an `Rz(π/4)` up to global phase.
+* **Bloch sphere "T|1⟩" (p. 32–33):** still the south pole — same "invisible phase" story as Y and Z.
+
+### 4.5 S gate (Eq. 3.44–3.48) — p. 33 – 35
+* `S = diag(1, i)`; check `T·T == S` → printed **True** (p. 35); circuit `─T─T─` is drawn next to `─S─` as a visual proof that the two circuits are the same operator.
+* **Bloch sphere "S|1⟩" (p. 34–35):** again the south pole (phase-only gate).
+
+### 4.6 Hadamard gate (Eq. 3.49–3.55) — p. 36 – 39
+* Matrix `(1/√2)[[1,1],[1,−1]]`; the code verifies the notes' Pauli form `H = (X+Z)/√2` (Eq. 3.52) → **True** (p. 37).
+* **Bloch sphere "H|0⟩" (p. 37):** arrow points to the **+x axis** — the "half-way between x and z" π-rotation about the (x+z)/√2 axis, giving `|+⟩`.
+* **Measurement circuit (p. 38) and histogram (p. 38–40) "H|0⟩ measurement: expect ~50/50 split":** bars of **2071** and **2025** out of 4096. Unlike the previous deterministic spikes, this is the genuinely random, quantum result — the notebook's first "real" quantum statistics.
+
+---
+
+## 5. Section 3 — Universal single-qubit gates: H and T (Sec. 3.1.3) — p. 40 – 43
+
+**Physics:** repeated `H` and `T` generate a *dense* set of rotations, so any single-qubit unitary can be approximated to arbitrary accuracy (the notes' Eq. 3.56–3.71).
+
+**What the code does**
+* Builds `H·T·H` and verifies `HTH = e^{iπ/8}(cos(π/8)I − i sin(π/8)X)` (Eq. 3.56). Printed matrices **match exactly** (p. 41). Circuits shown as `─H─T─H─`.
+* Builds `T·H·T·H` — note that the code is written *in reverse notation order* (`h; t; h; t` → circuit left-to-right is `H–T–H–T`, which as an operator product is `T·H·T·H`), computes `η = 2·arccos(cos²(π/8)) = 1.09606`, notes `η/π = 0.348886` is irrational (so the rotation angle is never a rational multiple of π → the orbit never closes), and verifies `THTH = Rp(η)` **up to global phase** with the notes' axis `p = (cos π/8, sin π/8, cos π/8)`. Printed **True** (p. 42).
+* **Figure — polar plot "theta vs phi after 1..12 applications of T.H.T.H" (p. 43, image p. 42):** a 2-D polar scatter/line plot where the radius is the Bloch **θ** and the angle is the Bloch **φ** for 1, 2, …, 12 repetitions of `THTH`, starting from `|+⟩`. It draws a **spiral that keeps stepping around without repeating** — the visual argument for "dense coverage of the sphere ⇒ universality". It is the only polar plot in the notebook.
+
+> **Caveat I verified:** "η/π is irrational" is asserted numerically, not proved; and 12 points can't *show* dense coverage. It's a nice heuristic picture, not a proof (the notes prove it via the algebraic structure of the rotation).
+
+---
+
+## 6. Section 4 — Multi-qubit states and controlled gates (Sec. 3.1.4) — p. 43 – 59
+
+**Definition under test (Eq. 3.81):** `CU|a,b⟩ = U^{a}|a,b⟩` — apply `U` to the target *only* when the control is 1.
+
+### 6.1 Controlled-H (p. 43 – 44)
+The H matrix is wrapped as `UnitaryGate(...).control(1)` and appended as a 2-qubit gate.
+* **Circuit figure (p. 44):** `q0: ─●─` / `q1: ─H─` with the standard filled control dot.
+* Printed table for all four inputs (order of the printed vector is Qiskit's little-endian `|00⟩,|01⟩,|10⟩,|11⟩`): `CU|00⟩=|00⟩`, `CU|01⟩=(|01⟩+|11⟩)/√2`, `CU|10⟩=|10⟩`, `CU|11⟩=(|01⟩−|11⟩)/√2`. I re-ran this and it matches exactly — the control is qubit 0, so nothing happens for the `q0=0` inputs.
+
+### 6.2 CNOT / Controlled-X (Eq. 3.82) — p. 44 – 49
+* Circuit `q0: ─●─`, `q1: ─⊕─` (p. 44–45, drawn twice).
+* **Truth table by measurement (p. 45):** for each `(a,b)` the code prepares the input with `X`s, applies CNOT, measures with 256 shots, and prints the counts:
+  `00→{00}`, `01→{10}`, `10→{11}`, `11→{01}` — exactly `b_out = a XOR b`, each a **single 256-count bar** (four histogram figures on p. 46–49, "Measurement outcomes"). Doing the truth table *by measured statistics* rather than by matrix algebra is the most important pedagogical upgrade in the notebook.
+
+### 6.3 Bell state (p. 49 – 54)
+* Circuit (p. 49): `q0: ─H─●─`, `q1: ───⊕─`.
+* **Figure — state-city plot (p. 50, image at 1539×803 px):** the 3-D "city" of amplitudes, real and imaginary, over the four basis states. Only the `|00⟩` and `|11⟩` skyscrapers of height 1/√2 ≈ 0.707 stand, and they are **blue = purely real, phase 0**. It shows directly that the state is `(|00⟩+|11⟩)/√2` with no relative phase.
+* **Figure — Q-sphere (p. 50–51):** a globe where each basis state is a node; node size = |amplitude|², node *colour* = phase (colour wheel: 0 → red/pink, π/2 → blue, π → cyan/green, 3π/2 → yellow). You see exactly two equally big nodes, `|00⟩` at the top and `|11⟩` at the bottom, **both the same colour** → the two amplitudes have the same phase. It is the standard "this is a maximally entangled 2-qubit state" picture.
+* **Histograms (p. 53–54):** "Bell state measurement: only 00 and 11 appear (perfect correlation)", counts `{'00': 2048, '11': 2048}` — the two outcomes that never appear (`01`, `10`) *don't exist at all* in the plot. That absence is the fingerprint of entanglement.
+
+### 6.4 SWAP (Eq. 3.83–3.85, Fig. 3.10) — p. 55 – 57
+* Circuit (p. 55–56): `X` on q0 (prepare `|q1q0⟩ = |01⟩`), barrier, then **three CNOTs** `cx(0,1), cx(1,0), cx(0,1)`.
+* **Histogram (p. 57):** counts `{'10': 2048}` — a single spike. Input was q0=1, q1=0; after the swap q0=0, q1=1, which Qiskit reports as the string `'10'`. Perfect exchange.
+> **Subtlety worth flagging:** the notes (Eq. 3.83–3.85) give *three* equivalent three-CNOT identities, one for each pair `(a,b)` of the input. The notebook only implements and verifies the `(|01⟩,|10⟩)` version. Also, the "different" constructions differ only because of the CNOT **direction convention** — don't be confused if the notes' picture looks like a different CNOT ordering.
+
+### 6.5 Control-by-|0⟩ (open control), Fig. 3.11 — p. 58 – 60
+* `cx(ctrl_state=0)` draws the **hollow open circle** on the control line (p. 58) and triggers the target when the control is `|0⟩`.
+* The code then builds `X–CNOT–X` on the control line (p. 59) and verifies the two operators are **identical** (`True`, p. 60) — the notes' Fig. 3.11 identity.
+
+---
+
+## 7. Section 5 — n-control qubit gates (Sec. 3.1.5) — p. 60 – 73
+
+### 7.1 Toffoli (CCX), Fig. 3.12–3.13 — p. 60 – 67
+* Circuit: `q0: ─●─`, `q1: ─●─`, `q2: ─⊕─`.
+* **Truth table by measurement (p. 60):** all 8 inputs, 256 shots each, single spikes: `c_out = c XOR (a AND b)` — the target flips only for `a=b=1`. Seven pages of "Measurement outcomes" histograms (p. 61–67) each with one bar.
+
+### 7.2 Multi-controlled-X (Cn), Fig. 3.15 — p. 68 – 73
+* `MCXGate(4)` with all four controls preset to `|1⟩` via `X` gates (circuit p. 68–69, the classic 5-line fan-in picture).
+* **Histogram (p. 70):** `{'11111': 2048}` — deterministic flip of the target.
+* **Decomposition figure (p. 71–73, image 1722×1722):** `transpile(qc, basis_gates=['u','cx'])` printed as a tall multi-page circuit — the explicit gate-level decomposition of a C⁴X into CNOTs and single-qubit `u` gates (what the notes describe as repeated use of Eq. 3.27). It's wide, dense and hard to read at PDF size, but it demonstrates that the compiler really does the work.
+
+---
+
+## 8. Section 6 — Controlled-phase and phase kickback (Sec. 3.1.7) — p. 73 – 103
+
+**Physics (Eq. 3.100):** `CP(α)` adds the phase `e^{iα}` **only** to the `|11⟩` component. Because the phase sits on a *product* state, it can be reinterpreted as a phase on the control → *phase kickback*.
+
+* Circuit (p. 74, p. 102): `q0: ─H─●─H─` (control in superposition) and `q1: ─X─P(α)─` (target in `|1⟩`), i.e. `H`, `CP(α)`, `H`.
+* **Q-sphere figure (p. 74–76):** two nodes of equal size, `|10⟩` at the equator (control=1… in Qiskit's ordering `|q1q0⟩`) and `|11⟩` at the bottom. Crucially they now have **different colours**: `|10⟩` is blue (phase 0) while `|11⟩` is purple (phase π/3 = 60°) — the phase wheel in the corner lets you read the kicked-back phase α directly off the picture. Printed check: `measured relative phase = 1.0471975511965976 = π/3 = α` ✔.
+* **Figure — the phase-kickback interference scan (p. 76–77, plot on p. 101):** α is swept over 25 values from 0 to 2π; for each, the notebook runs `H–CP(α)–H` on the control, measures, and plots `P(control = 1)` vs α. The curve is **1 − cos²(...)**-shaped: it starts at 0, rises to a **maximum of 1.0 at α = π**, and returns to 0 at 2π. This single plot is the whole section: the phase α — which is *completely unobservable* in any Z-basis measurement of the target — becomes a full-swing probability on the control. (This is the mechanism behind phase-estimation and nearly every phase-based quantum algorithm.)
+* **Example histogram (p. 102–103):** with α = π/2 the outcome is a genuine 50/50 (968 vs 1080). At α = 0 the plot shows a clean 2048–0, and near α = π a clean 0–2048 (the histograms at p. 77–101 are the 24 individual runs behind the scan).
+
+---
+
+## 9. Section 7 — The no-cloning theorem (Sec. 3.2) — p. 104 – 112
+
+**Physics (Eq. 3.176–3.178):** no unitary can copy an arbitrary unknown `|ψ⟩`, because unitaries are linear and the "cloning" map is not.
+
+**The experiment:** the most natural candidate cloner is `CNOT` with the unknown state on the control and a blank `|0⟩` ancilla as target: `U(θ,φ)` then `CX(0,1)`.
+
+* Circuit (p. 104–105): `q0: ─U(θ,φ)─●─`, `q1: ───────⊕─`.
+* **Fidelity table (p. 105):** for θ = 0 … π the state fidelity between the circuit output and the ideal `|ψ⟩|ψ⟩` is printed:
+
+| θ | 0 | 0.524 | 1.047 | 1.571 | 2.094 | 2.618 | π |
+|---|---|---|---|---|---|---|---|
+| fidelity | **1.000** | 0.844 | 0.600 | **0.500** | 0.600 | 0.844 | **1.000** |
+
+  The pattern is exact: **F = (cos³(θ/2) + sin³(θ/2))²**, which equals 1 for the basis states (`|0⟩`, `|1⟩` — classical bits *can* be copied) and drops to its minimum ½ for `|+⟩` (θ = π/2, the maximally "quantum" direction). This is the quantitative form of the theorem, not just a slogan.
+* **Histograms (p. 106–109):**
+  * "Attempted clone of |0⟩ (basis state): looks like cloning" — a **single 2048 bar**.
+  * "Attempted clone of |+⟩ (superposition): entanglement, NOT two copies of |+⟩" — **two ~50/50 bars**. The comment in the notebook is the key: what CNOT actually produces is the *entangled* state `(|00⟩+|11⟩)/√2`; each qubit alone is a maximally mixed 50/50, so no qubit carries "the original `|+⟩`".
+* **The decisive test (p. 110–112):** apply `H` to *both* qubits (i.e. measure both in the X basis) and look for the "cloning worked" signature, which would be a single bar at `00`. Circuit (p. 111) and histogram (p. 112) show **`{'11': 1000, '00': 1048}`** — a spread. The notebook's own conclusion (p. 112): *"The histogram shows a spread across outcomes, not a clean spike at 00 — direct experimental confirmation of the no-cloning theorem."*
+
+This is arguably the best-designed section of the notebook: prediction → quantitative curve → histogram → falsification test, with the failure used as the evidence.
+
+---
+
+## 10. Section 8 — Bonus: Deutsch's algorithm (Sec. 4.1.1) — p. 112 – 123
+
+**Physics (Eq. 4.9–4.14):** with the oracle `U_f|x⟩|y⟩ = |x⟩|y ⊕ f(x)⟩`, the circuit `X(anc) · H ⊗ H · U_f · H(register)` gives `|0⟩` if `f` is constant and `|1⟩` if `f` is balanced — decided with **one** query.
+
+* `deutsch_oracle(kind)` builds all four single-bit oracles: `constant_0` (do nothing), `constant_1` (`X` on the ancilla), `balanced_identity` (`CNOT`), `balanced_not` (`CNOT` then `X`).
+* `deutsch_circuit(kind)` wraps the oracle in a labelled `U_f` box with `H`s, barriers and a single measurement on the register qubit.
+* **Circuit figures (p. 113–114):** four diagrams, `Deutsch algorithm circuit — f = constant_0 / constant_1 / balanced_identity / balanced_not`, each showing the `Uf[...]` block between two Hadamard layers and the single classical bit `c`. Register qubit `q0` carries the top `H`, the ancilla `q1` carries `X` then `H` (the `|−⟩` preparation of Eq. 4.11), and only `q0` is measured.
+  * For `f = constant_0` the oracle box is (correctly) **empty** — "do nothing" *is* the constant-0 oracle, since `f(x) = 0` means `y ⊕ 0 = y`. This is easy to misread as a missing gate; it isn't.
+* **Histograms (p. 115–123):** four "Measurement outcomes" plots, each a **single 2048 bar**:
+
+| f | counts | verdict |
+|---|---|---|
+| constant_0 | `{'0': 2048}` | CONSTANT |
+| constant_1 | `{'0': 2048}` | CONSTANT |
+| balanced_identity | `{'1': 2048}` | BALANCED |
+| balanced_not | `{'1': 2048}` | BALANCED |
+
+  Deterministic, correct classification of all four functions **with a single oracle query** — the notebook's clear statement of the quantum advantage (vs. up to 2 classical queries for 1 bit, and N/2+1 in general).
+
+---
+
+## 11. Section 9 — Bonus: the Quantum Fourier Transform circuit (Sec. 4.6) — p. 123 – 133
+
+### 11.1 Building and drawing the QFT
+`qft_manual(n)` implements the notes' construction (Eq. 4.70–4.90, Fig. 4.4) directly:
+```
+for j in range(n):
+    h(j);                       # Hadamard on j
+    for k in range(j+1, n):     # controlled-phase R_k
+        cp(2π / 2^(k-j+1), k, j)
+swaps to reverse the qubit order
+```
+* **Circuit figure (p. 124):** `Manually-built QFT circuit for n = 3` — `H` on the first line, its `P(π/2)`, `P(π/4)` controls from below, then `H`s on the second line, the final `SWAP` between the outer lines. Exactly the textbook QFT ladder.
+* The notebook compares it with `qiskit.circuit.library.QFT(3)`. Printed result: **`Manual QFT matches Qiskit library QFT: False`** — see §14 below; this is expected and is a *convention* difference, not a physics error. (The library version, drawn on p. 124–125, has the same inverse-V pattern but puts the `H` at the *end* of each line with the control-phases accumulating the other way round, and the manual version's final `SWAP`s fix the ordering.)
+
+### 11.2 What the QFT does to a basis state
+* Circuit (p. 125–126): two `X` gates to set the register to `|3⟩`, then the manual QFT.
+* **Figure — amplitude bar chart (p. 126–127):** `|amplitude|²` vs basis index y for all 8 outcomes. **All eight bars are exactly equal (0.125)** and the title says it: *"QFT output: equal-magnitude superposition over all y, phase encodes x"*. The picture demonstrates the QFT's defining behaviour: amplitudes are uniform, **all the input information moves into the phases**.
+* **Q-sphere figure (p. 127–128):** eight nodes around the globe of equal size (all |amp|² = 1/8) but **different colours** — the phase wheel shows eight distinct hues, i.e. the phase `2π·x·y/8` winding around. This is the correct picture *for a normalised DFT*; see the caveat in §14 about the notebook's gate ordering.
+* **Histogram (p. 128–130):** "Measuring QFT output: flat distribution over all 2^n outcomes" — eight bars each ≈ 512 of 4096 shots. Because measurement discards phase, a QFT output always looks flat; the flat histogram is the honest illustration of "phases are invisible in a Z-basis measurement".
+
+### 11.3 Period-finding demo (Sec. 4.3 example, Eq. 4.46–4.49) — p. 130 – 133
+* Circuit (p. 131): `H`s on the 3-bit register → a "naive oracle" (`cx(2, ancilla)`) → the manual `QFT` block → measure the register. Title: *"Period-finding style circuit, N = 8, true period P = 2"*.
+* **Histogram (p. 132–133):** counts `{'000': 2084, '001': 2012}` — peaks at the register values 0 and 4 = **N/P**, exactly as the notes' Eq. 4.48 predicts. The printed line repeats the theory: *"peaks should appear at y = 0 and y = N/2 = 4"*.
+> **Read this one carefully:** the plotting labels are Qiskit bit-strings (`'001'`), not integers, so the bar labelled `001` *is* the peak at y = 4 under the notebook's bit-ordering convention. Also, the "oracle" here is not a genuine period-2 oracle — see §14 for exactly what this demo does and doesn't show.
+
+---
+
+## 12. Summary table & exercises (p. 133 – 134)
+
+The notebook closes with a **mapping table** (`Notes section → Gate(s) → Notebook section → What's new`) covering 3.1.1, 3.1.2, 3.1.3, 3.1.4, 3.1.5, 3.1.7, 3.2, 4.1.1, 4.6, and five **student exercises**:
+
+1. Repeat the phase-kickback scan with a Toffoli-controlled phase (2 controls).
+2. Extend Deutsch to 2-bit **Deutsch–Jozsa**; draw and measure all outputs.
+3. Change the period-finding demo to P = 4 and confirm peaks move to multiples of N/4.
+4. Sweep θ continuously in the no-cloning experiment and plot P(00) in the X basis against the fidelity curve.
+5. Build the 4-qubit QFT, draw it, and measure it on a GHZ-like periodic input.
+
+---
+
+## 13. Figure-type index — what you are looking at
+
+| Figure type | Appearance | Where | How to read it |
+|---|---|---|---|
+| **Circuit diagram** (`draw('mpl', style='bw')`) | Black-and-white boxes on horizontal wires, `q0/q1/…` labels | Everywhere (≈ 60 of them) | Boxes = gates, `●` filled dot = control active on `|1⟩`, `○` open dot = control on `|0⟩`, `⊕` = XOR target, `┼` = SWAP, `▧`=measurement box, `meas` = classical register |
+| **Bloch sphere** | Grey globe, magenta arrow, axes x/y/z, `|0⟩`/`|1⟩` poles | p. 12, 15, 18, 20, 22, 26, 28, 29, 32, 34, 37, 43 | Arrow direction = qubit state; rotation about z changes azimuth only; about x tilts it out of the equator; a pure phase gate leaves the arrow pointing at the same spot |
+| **Histogram** (`plot_histogram`) | Blue bars, count axis, title | ~70 panels (p. 7, 8, 24, 25, 30, 31, 38–40, 46–49, 53, 54, 57, 61–67, 70, 77–101, 103, 106–109, 115–122, 129, 132, 133) | One tall bar = deterministic outcome; two equal bars = 50/50 superposition; **missing** bars = outcomes forbidden by entanglement; flat bars = phase information destroyed by measurement |
+| **State-city** (`plot_state_city`) | 3-D skyscraper bars over `\|00⟩…\|11⟩`, two colours = real/imag | p. 50 | Bar height = amplitude, colour = real (blue) vs imaginary; equal heights at `00` and `11` = Bell state |
+| **Q-sphere** (`plot_state_qsphere`) | Grey globe with coloured nodes + phase wheel | p. 50–51, 74–76, 127–128 | Node size = probability, node **colour = phase** (wheel: 0 → pink/red, π/2 → blue, π → green, 3π/2 → yellow); equal-phase nodes are the same colour |
+| **Polar plot** | Line of points on a circular grid | p. 43 | Radius = Bloch θ, angle = Bloch φ; shows the orbit of repeated `THTH` never closing |
+| **Line/scatter scan** | `P(control = 1)` vs α | p. 101 (from p. 76–77) | Rising to 1 at α = π = phase kickback; the full interference curve |
+| **Bar chart of probabilities** | `\|amplitude\|²` vs basis index | p. 126–127 | QFT output: all bars equal → information is in the phases |
+| **Tall decomposed circuit** | Very long multi-page circuit | p. 71–73 | `MCX` expanded into `u` + `cx` by the transpiler |
+
+---
+
+## 14. Honest review — what is solid, and what is shaky
+
+I re-derived/re-ran the key claims with Qiskit 2.5.2 on a fresh install. Results:
+
+### ✅ Solid and verified
+* `Rz(η) = Rn(η)` about ẑ; `T = e^{iπ/8}Rz(π/4)`; `S = T²`; `H = (X+Z)/√2`; `HTH = e^{iπ/8}Rx(...)`; `THTH = Rp(η)` up to phase — **all reproduce exactly**.
+* Bloch-angle identities for `Rz` and `Rx` (θ / φ preservation) — the printed numbers match theory to 3 decimals.
+* CNOT & Toffoli measured truth tables, Bell-state correlations, SWAP, open control = X–CX–X, C⁴X — all correct.
+* No-cloning fidelity curve: I verified the closed form **F = (cos³(θ/2) + sin³(θ/2))²** reproduces every tabulated value, and the X-basis test is a genuine falsification experiment.
+* Deutsch: all four verdicts correct and query-optimal.
+
+### ⚠️ Problems, subtleties and things the notebook glosses over
+1. **`compare_bloch` is dead code** (creates and immediately closes a figure, returns two unrelated figures, never used).
+2. **`Manual QFT matches Qiskit library QFT: False`** — real discrepancy, and the notebook shows the failure without explaining it. Cause: the library `QFT` uses the reversed convention (H *last* on each line, control-phase ladder running the other way) and returns the qubit order already reversed, while `qft_manual` reverses the order with explicit `SWAP`s. The two are equal only **up to a bit-reversal of the output** — verified: `qft_manual` acting on `|3⟩` produces phases `(0, 0, π, π, −π/2, −π/2, +π/2, +π/2)` whereas the true uniform DFT gives `(0, 2.356, −1.571, 0.785, π, −0.785, 1.571, −2.356)`, i.e. the same multiset, in bit-reversed order. **Physics is fine; the comparison claim is misleading.**
+3. **The amplitude bar chart (p. 126–127) plots the manual QFT's output**, so it shows the *correct* full-spectrum uniform-magnitude picture by coincidence of `|3⟩` (whose bit-reverse is `|6⟩`), but for a general input it would not be the textbook `y = x·N` phase pattern. The Q-sphere in the same section inherits the same ordering.
+4. **The period-finding demo (p. 130–133) does not do what its label implies.** A `cx(q2, ancilla)` oracle does not create a period-2 function of the register index; its QFT spectrum is `{0, 4}` — i.e. peaks at **0 and N/2** — which is exactly the "peak at N/P" structure the notebook claims for P = 2, but for the *wrong reason*. I verified the numbers (exact: 50 % at y = 0, 50 % at y = 4, and after bit-reversal the peaks land on register values 0 and 4, matching the plotted `000`/`001` bars). The claim is right, the demonstrated mechanism isn't — an exercise for a careful student, or worth fixing (a proper oracle would entangle the whole register).
+5. **No decoherence/noise.** Everything runs on the ideal `AerSimulator`; the histograms are shot-noise-limited only. Real IBM hardware would show `01`/`10` leakage in the Bell histogram and non-unit fidelity in the no-cloning table. The notebook never says this, so it can read as if the ideal results *were* hardware results.
+6. **Irrationality of η/π (Sec. 3) is asserted numerically**, not proved, and "12 points on a polar plot" is a slogan-level illustration of density, not evidence of it.
+7. **`QFT` from `qiskit.circuit.library` is deprecated** in Qiskit 2.1+ (the notebook's own output even prints the `DeprecationWarning`); the modern spelling is `QFTGate` / `qiskit.synthesis.qft.synth_qft_full`. So the notebook will start failing on Qiskit 3.0.
+8. **Figure/memory hygiene:** the phase-kickback sweep creates 25 histograms via `pyplot` without closing them — matplotlib's own `RuntimeWarning: More than 20 figures have been opened` is printed in the PDF (p. 77). Cosmetic, but it explains the pages of scattered histograms between p. 77 and p. 101.
+9. **Exported output noise:** the whole `pip install` console dump (p. 1–2) and the deprecation warnings are left in the document.
+10. **Drawing artefacts:** the ancilla wire in the Deutsch circuits renders with the label `m1` (from the `X`-gate box text), the state-city/Q-sphere axis text is tiny at PDF scale, and several circuit figures repeat back-to-back (the PDF export seems to place two copies of each `display`ed figure per cell).
+11. **The summary table's "What's new" column** is accurate in spirit, but "Bloch spheres + basis-change measurement" over-sells §1: the "measurement" there doesn't actually reveal the phase (both histograms are ~50/50). The *real* phase-visibility demonstrations are the H–Z–H test (§2.3) and the phase-kickback scan (§6).
+
+### Where the notebook genuinely adds value over the notes
+* Turning each identity (`S = T²`, `H = (X+Z)/√2`, open-control = X-CX-X, `Rp(η)` from `THTH`) into a **numerical operator equality test**, so a student can *falsify* the notes.
+* Doing every truth table **by measurement** rather than by matrix multiplication.
+* Making **phase** visible three different ways: basis change (H–Z–H), coloured Q-spheres, and the phase-kickback interference curve.
+* Treating **no-cloning** as a quantitative curve plus a decisive 50/50 falsification test.
+* The **Deutsch** and **QFT** bonuses are properly connected back to their equation numbers and figures in Chapter 4.
+
+---
+
+## 15. Re-running / reproducing it
+
+```bash
+pip install qiskit qiskit-aer matplotlib numpy pylatexenc      # notebook's own cell
+```
+* Everything is simulator-based and needs no IBM account.
+* If you run it on a newer Qiskit, expect two fixes: replace `from qiskit.circuit.library import QFT` with `QFTGate` (or pin Qiskit < 3.0), and `plt.close()` the sweep figures to silence the >20-figures warning.
+* To *use* the figures in a report/lab notebook: pull the images out of the PDF (each of the 186 is a standalone embedded raster — circuits are PNG, plots are JPEG) or simply re-run the notebook cells.
+* Suggested first modification for a student: run §3's polar plot with 60–200 repetitions instead of 12, and re-run the Bell histogram with `AerSimulator(noise_model=...)` to see what a real device does.
+
+---
+
+*Prepared as a complete reading companion to `vertopal.com_QC_gates_notes.pdf`. Page numbers refer to that PDF; equation numbers refer to `QC_notes_gates.pdf`, Chapter 3 (and Chapter 4 excerpts).*
 
