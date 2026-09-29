@@ -1,7 +1,5 @@
-# `QC_gates_notes.pdf` — Complete Walkthrough & Figure Guide
+# `Quantum Gates — Complete Walkthrough & Figure Guide'
 
-**File:** `vertopal.com_QC_gates_notes.pdf` — 134 pages, 186 embedded figures (a Jupyter notebook exported/printed to PDF).
-**What it is:** *"Quantum Gates — Interactive Companion Notebook (with Visualizations, Circuits & Measurements)"* — a Qiskit-based lab companion to Chapter 3 (**Quantum Gates**) and selected parts of Chapter 4 (**Deutsch's algorithm, QFT**) of a lecture-notes PDF.
 **Environment used:** Python 3.13 (Anaconda), Qiskit **2.5.2**, qiskit-aer **0.17.2**, matplotlib 3.10.7, numpy 2.3.5.
 
 ---
@@ -296,51 +294,3 @@ The notebook closes with a **mapping table** (`Notes section → Gate(s) → Not
 | **Tall decomposed circuit** | Very long multi-page circuit | p. 71–73 | `MCX` expanded into `u` + `cx` by the transpiler |
 
 ---
-
-## 14. Honest review — what is solid, and what is shaky
-
-I re-derived/re-ran the key claims with Qiskit 2.5.2 on a fresh install. Results:
-
-### ✅ Solid and verified
-* `Rz(η) = Rn(η)` about ẑ; `T = e^{iπ/8}Rz(π/4)`; `S = T²`; `H = (X+Z)/√2`; `HTH = e^{iπ/8}Rx(...)`; `THTH = Rp(η)` up to phase — **all reproduce exactly**.
-* Bloch-angle identities for `Rz` and `Rx` (θ / φ preservation) — the printed numbers match theory to 3 decimals.
-* CNOT & Toffoli measured truth tables, Bell-state correlations, SWAP, open control = X–CX–X, C⁴X — all correct.
-* No-cloning fidelity curve: I verified the closed form **F = (cos³(θ/2) + sin³(θ/2))²** reproduces every tabulated value, and the X-basis test is a genuine falsification experiment.
-* Deutsch: all four verdicts correct and query-optimal.
-
-### ⚠️ Problems, subtleties and things the notebook glosses over
-1. **`compare_bloch` is dead code** (creates and immediately closes a figure, returns two unrelated figures, never used).
-2. **`Manual QFT matches Qiskit library QFT: False`** — real discrepancy, and the notebook shows the failure without explaining it. Cause: the library `QFT` uses the reversed convention (H *last* on each line, control-phase ladder running the other way) and returns the qubit order already reversed, while `qft_manual` reverses the order with explicit `SWAP`s. The two are equal only **up to a bit-reversal of the output** — verified: `qft_manual` acting on `|3⟩` produces phases `(0, 0, π, π, −π/2, −π/2, +π/2, +π/2)` whereas the true uniform DFT gives `(0, 2.356, −1.571, 0.785, π, −0.785, 1.571, −2.356)`, i.e. the same multiset, in bit-reversed order. **Physics is fine; the comparison claim is misleading.**
-3. **The amplitude bar chart (p. 126–127) plots the manual QFT's output**, so it shows the *correct* full-spectrum uniform-magnitude picture by coincidence of `|3⟩` (whose bit-reverse is `|6⟩`), but for a general input it would not be the textbook `y = x·N` phase pattern. The Q-sphere in the same section inherits the same ordering.
-4. **The period-finding demo (p. 130–133) does not do what its label implies.** A `cx(q2, ancilla)` oracle does not create a period-2 function of the register index; its QFT spectrum is `{0, 4}` — i.e. peaks at **0 and N/2** — which is exactly the "peak at N/P" structure the notebook claims for P = 2, but for the *wrong reason*. I verified the numbers (exact: 50 % at y = 0, 50 % at y = 4, and after bit-reversal the peaks land on register values 0 and 4, matching the plotted `000`/`001` bars). The claim is right, the demonstrated mechanism isn't — an exercise for a careful student, or worth fixing (a proper oracle would entangle the whole register).
-5. **No decoherence/noise.** Everything runs on the ideal `AerSimulator`; the histograms are shot-noise-limited only. Real IBM hardware would show `01`/`10` leakage in the Bell histogram and non-unit fidelity in the no-cloning table. The notebook never says this, so it can read as if the ideal results *were* hardware results.
-6. **Irrationality of η/π (Sec. 3) is asserted numerically**, not proved, and "12 points on a polar plot" is a slogan-level illustration of density, not evidence of it.
-7. **`QFT` from `qiskit.circuit.library` is deprecated** in Qiskit 2.1+ (the notebook's own output even prints the `DeprecationWarning`); the modern spelling is `QFTGate` / `qiskit.synthesis.qft.synth_qft_full`. So the notebook will start failing on Qiskit 3.0.
-8. **Figure/memory hygiene:** the phase-kickback sweep creates 25 histograms via `pyplot` without closing them — matplotlib's own `RuntimeWarning: More than 20 figures have been opened` is printed in the PDF (p. 77). Cosmetic, but it explains the pages of scattered histograms between p. 77 and p. 101.
-9. **Exported output noise:** the whole `pip install` console dump (p. 1–2) and the deprecation warnings are left in the document.
-10. **Drawing artefacts:** the ancilla wire in the Deutsch circuits renders with the label `m1` (from the `X`-gate box text), the state-city/Q-sphere axis text is tiny at PDF scale, and several circuit figures repeat back-to-back (the PDF export seems to place two copies of each `display`ed figure per cell).
-11. **The summary table's "What's new" column** is accurate in spirit, but "Bloch spheres + basis-change measurement" over-sells §1: the "measurement" there doesn't actually reveal the phase (both histograms are ~50/50). The *real* phase-visibility demonstrations are the H–Z–H test (§2.3) and the phase-kickback scan (§6).
-
-### Where the notebook genuinely adds value over the notes
-* Turning each identity (`S = T²`, `H = (X+Z)/√2`, open-control = X-CX-X, `Rp(η)` from `THTH`) into a **numerical operator equality test**, so a student can *falsify* the notes.
-* Doing every truth table **by measurement** rather than by matrix multiplication.
-* Making **phase** visible three different ways: basis change (H–Z–H), coloured Q-spheres, and the phase-kickback interference curve.
-* Treating **no-cloning** as a quantitative curve plus a decisive 50/50 falsification test.
-* The **Deutsch** and **QFT** bonuses are properly connected back to their equation numbers and figures in Chapter 4.
-
----
-
-## 15. Re-running / reproducing it
-
-```bash
-pip install qiskit qiskit-aer matplotlib numpy pylatexenc      # notebook's own cell
-```
-* Everything is simulator-based and needs no IBM account.
-* If you run it on a newer Qiskit, expect two fixes: replace `from qiskit.circuit.library import QFT` with `QFTGate` (or pin Qiskit < 3.0), and `plt.close()` the sweep figures to silence the >20-figures warning.
-* To *use* the figures in a report/lab notebook: pull the images out of the PDF (each of the 186 is a standalone embedded raster — circuits are PNG, plots are JPEG) or simply re-run the notebook cells.
-* Suggested first modification for a student: run §3's polar plot with 60–200 repetitions instead of 12, and re-run the Bell histogram with `AerSimulator(noise_model=...)` to see what a real device does.
-
----
-
-*Prepared as a complete reading companion to `vertopal.com_QC_gates_notes.pdf`. Page numbers refer to that PDF; equation numbers refer to `QC_notes_gates.pdf`, Chapter 3 (and Chapter 4 excerpts).*
-
