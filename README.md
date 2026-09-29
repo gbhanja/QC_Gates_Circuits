@@ -1,4 +1,4 @@
-# `Quantum Gates — Complete Walkthrough & Figure Guide'
+# `Quantum Gates — Complete Walkthrough & Figure Guide`
 
 **Environment used:** Python 3.13 (Anaconda), Qiskit **2.5.2**, qiskit-aer **0.17.2**, matplotlib 3.10.7, numpy 2.3.5.
 
