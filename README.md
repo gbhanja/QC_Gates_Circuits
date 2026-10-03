@@ -219,7 +219,7 @@ This is arguably the best-designed section of the notebook: prediction → quant
 
 ---
 
-## 10. Section 8 — Bonus: Deutsch's algorithm (Sec. 4.1.1) — p. 112 – 123
+## 10. Section 8 : Deutsch's algorithm (Sec. 4.1.1) — p. 112 – 123
 
 **Physics (Eq. 4.9–4.14):** with the oracle `U_f|x⟩|y⟩ = |x⟩|y ⊕ f(x)⟩`, the circuit `X(anc) · H ⊗ H · U_f · H(register)` gives `|0⟩` if `f` is constant and `|1⟩` if `f` is balanced — decided with **one** query.
 
@@ -240,7 +240,7 @@ This is arguably the best-designed section of the notebook: prediction → quant
 
 ---
 
-## 11. Section 9 — Bonus: the Quantum Fourier Transform circuit (Sec. 4.6) — p. 123 – 133
+## 11. Section 9 : The Quantum Fourier Transform circuit (Sec. 4.6) — p. 123 – 133
 
 ### 11.1 Building and drawing the QFT
 `qft_manual(n)` implements the notes' construction (Eq. 4.70–4.90, Fig. 4.4) directly:
