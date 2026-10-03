@@ -17,7 +17,7 @@ It is deliberately organised to *section numbering*, and it ends with a mapping 
 ### How to read the rest of this document
 
 * Each numbered section below = one notebook section, with **what the code does**, **what the printed numbers mean**, and **what each figure shows**.
-* Page references are to the PDF pages (e.g. p. 11) so you can jump straight there.
+
 * At the end there is a **figure-type index**, an **honest review of bugs/subtleties** I found by re-running the physics, and notes for re-running the notebook.
 
 ---
