@@ -25,7 +25,7 @@ It is deliberately organised to *section numbering*, and it ends with a mapping 
 ## 1. Front matter and setup (p. 1 – 4)
 
 **Contents**
-* Title, provenance (based on `QC_notes_gates.pdf`, Chapter 3 + part of Chapter 4), and credits: IBM Qiskit Community tutorials, *Coding With Qiskit* ep. 4 (Gates), *Teach Me Quantum* 2018, Qiskit/qiskit-tutorials, IBM Quantum Learning.
+* Title, provenance (based on `PH 643: Quantum Information and Computation course Notes`), and credits: IBM Qiskit Community tutorials, *Coding With Qiskit* ep. 4 (Gates), *Teach Me Quantum* 2018, Qiskit/qiskit-tutorials, IBM Quantum Learning.
 * The `pip install qiskit qiskit-aer matplotlib numpy pylatexenc` cell **including all its console output** (that's why pages 1–2 are full of "Requirement already satisfied") — typical of an exported notebook where output was never cleared.
 * A numbered reference list.
 
