@@ -251,7 +251,7 @@ for j in range(n):
 swaps to reverse the qubit order
 ```
 * **Circuit figure :** *"Manually-built QFT circuit for n = 3"* (drawn twice) — `H` on the first line, its `P(π/2)`, `P(π/4)` controls from below, then `H`s on the second line, the final `SWAP` between the outer lines. Exactly the textbook QFT ladder. A Qiskit `DeprecationWarning` for `QFT(n)` is also printed here.
-* The notebook compares it with `qiskit.circuit.library.QFT(3)`. Printed result (p. 25): **`Manual QFT matches Qiskit library QFT: False`** — this is a *convention* difference (ordering of `H` vs. controlled-phases, and the final SWAP), not a physics error. The library version, drawn on (*"Qiskit built-in QFT (decomposed) for comparison"*, shown twice), has the same inverse-V pattern but accumulates the control-phases in the other direction.
+* The notebook compares it with `qiskit.circuit.library.QFT(3)`. Printed result : **`Manual QFT matches Qiskit library QFT: False`** — this is a *convention* difference (ordering of `H` vs. controlled-phases, and the final SWAP), not a physics error. The library version, drawn on (*"Qiskit built-in QFT (decomposed) for comparison"*, shown twice), has the same inverse-V pattern but accumulates the control-phases in the other direction.
 
 ### 11.2 What the QFT does to a basis state
 * **Circuit :** two `X` gates to set the register to `|3⟩`, then the manual QFT — *"Prepare basis state, then apply manual QFT"*.
@@ -259,7 +259,7 @@ swaps to reverse the qubit order
 * **Figure — amplitude bar chart :** `|amplitude|²` vs basis index y for all 8 outcomes. **All eight bars are exactly equal (0.125)** and the title says it: *"QFT output: equal-magnitude superposition over all y, phase encodes x"*. The picture demonstrates the QFT's defining behaviour: amplitudes are uniform, **all the input information moves into the phases**.
   
 * **Q-sphere figure :** eight nodes around the globe of equal size (all |amp|² = 1/8) but **different colours** — the phase wheel shows eight distinct hues, i.e. the phase `2π·x·y/8` winding around.
-* **Histogram (p. 30):** *"Measuring QFT output: flat distribution over all 2^n outcomes"*, with circuit *"Full circuit: state prep + QFT + measurement"* shown above it — eight bars of **513, 510, 508, 496, 539, 560, 489, 481** out of 4096 (labels `000`…`111`). Because measurement discards phase, a QFT output always looks flat; the flat histogram is the honest illustration of "phases are invisible in a Z-basis measurement".
+* **Histogram :** *"Measuring QFT output: flat distribution over all 2^n outcomes"*, with circuit *"Full circuit: state prep + QFT + measurement"* shown above it — eight bars of **513, 510, 508, 496, 539, 560, 489, 481** out of 4096 (labels `000`…`111`). Because measurement discards phase, a QFT output always looks flat; the flat histogram is the honest illustration of "phases are invisible in a Z-basis measurement".
 
 ### 11.3 Period-finding demo 
 * **Text + repeated figures :** *"Period-finding style demonstration. A periodic function with period P=2 on n=3 bits..."* — the flat-distribution histogram and full circuit are shown again here before the new code, plus the setup `n_bits = 3; N = 8; P = 2`.
