@@ -63,7 +63,7 @@ Circuits: `H` then `Rz(π/2)`; and the same followed by another `H` before measu
 
 * Figure : **circuit diagram** `q: ─H─Rz(π/2)─` — a state-prep H (to make |+⟩) and the phase gate, plus a second circuit `─H─Rz(π/2)─H─M─` for the basis-change version.
 * **Figure — "Z-basis measurement: 50/50, Rz phase invisible here" :** two bars ≈ 1002 and 1046 out of 2048. This is the central lesson of phase gates: `Rz` multiplies a *relative phase*, and a Z-basis measurement cannot see relative phase, so the statistics are an uninformative 50/50.
-* **Figure — "X-basis measurement: Rz phase now visible" (p. 8):** again ≈ 1032/1016 — still ~50/50 because π/2 happens to be a special angle; but the *point* (that the H before detection rotates phase information into Z-basis probabilities) is made by the two circuits shown on p. 9 ("Full circuit with basis-change + measurement" — H, Rz, barrier, H, measure, showing both the `meas` register and how the measurement is attached).
+* **Figure — "X-basis measurement: Rz phase now visible" :** again ≈ 1032/1016 — still ~50/50 because π/2 happens to be a special angle; but the *point* (that the H before detection rotates phase information into Z-basis probabilities) is made by the two circuits shown on p. 9 ("Full circuit with basis-change + measurement" — H, Rz, barrier, H, measure, showing both the `meas` register and how the measurement is attached).
 
 **Take-away:** the notebook immediately establishes the theme it returns to repeatedly — *phases are invisible unless you interfere them.*
 
@@ -135,7 +135,7 @@ A single generic helper, `gate_report(name, build_fn, eq_ref, input_label)`, pro
 **What the code does**
 * Builds `H·T·H` and verifies `HTH = e^{iπ/8}(cos(π/8)I − i sin(π/8)X)`. Printed matrices **match exactly** . Circuits shown as `─H─T─H─`.
 * Builds `T·H·T·H` — note that the code is written *in reverse notation order* (`h; t; h; t` → circuit left-to-right is `H–T–H–T`, which as an operator product is `T·H·T·H`), computes `η = 2·arccos(cos²(π/8)) = 1.09606`, notes `η/π = 0.348886` is irrational (so the rotation angle is never a rational multiple of π → the orbit never closes), and verifies `THTH = Rp(η)` **up to global phase** with the notes' axis `p = (cos π/8, sin π/8, cos π/8)`. Printed **True**.
-* **Figure — polar plot "theta vs phi after 1..12 applications of T.H.T.H" :** a 2-D polar scatter/line plot where the radius is the Bloch **θ** and the angle is the Bloch **φ** for 1, 2, …, 12 repetitions of `THTH`, starting from `|+⟩`. It draws a **spiral that keeps stepping around without repeating** — the visual argument for "dense coverage of the sphere ⇒ universality". It is the only polar plot in the notebook.
+* **Figure — polar plot "theta vs phi after applications of T.H.T.H" :** a 2-D polar scatter/line plot where the radius is the Bloch **θ** and the angle is the Bloch **φ** for 1, 2, …, 12 repetitions of `THTH`, starting from `|+⟩`. It draws a **spiral that keeps stepping around without repeating** — the visual argument for "dense coverage of the sphere ⇒ universality". It is the only polar plot in the notebook.
 
 > **Caveat I verified:** "η/π is irrational" is asserted numerically, not proved; and 12 points can't *show* dense coverage. It's a nice heuristic picture, not a proof (the notes prove it via the algebraic structure of the rotation).
 
@@ -148,7 +148,7 @@ A single generic helper, `gate_report(name, build_fn, eq_ref, input_label)`, pro
 ### 6.1 Controlled-H 
 The H matrix is wrapped as `UnitaryGate(...).control(1)` and appended as a 2-qubit gate.
 * **Circuit figure :** `q0: ─●─` / `q1: ─H─` with the standard filled control dot.
-* Printed table for all four inputs (order of the printed vector is Qiskit's little-endian `|00⟩,|01⟩,|10⟩,|11⟩`): `CU|00⟩=|00⟩`, `CU|01⟩=(|01⟩+|11⟩)/√2`, `CU|10⟩=|10⟩`, `CU|11⟩=(|01⟩−|11⟩)/√2`. I re-ran this and it matches exactly — the control is qubit 0, so nothing happens for the `q0=0` inputs.
+* Printed table for all four inputs (order of the printed vector is Qiskit's little-endian `|00⟩,|01⟩,|10⟩,|11⟩`): `CU|00⟩=|00⟩`, `CU|01⟩=(|01⟩+|11⟩)/√2`, `CU|10⟩=|10⟩`, `CU|11⟩=(|01⟩−|11⟩)/√2`. After re-running this, it matches exactly — the control is qubit 0, so nothing happens for the `q0=0` inputs.
 
 ### 6.2 CNOT / Controlled-X 
 * Circuit `q0: ─●─`, `q1: ─⊕─` (drawn twice).
@@ -168,7 +168,7 @@ The H matrix is wrapped as `UnitaryGate(...).control(1)` and appended as a 2-qub
 
 ### 6.5 Control-by-|0⟩ (open control)
 * `cx(ctrl_state=0)` draws the **hollow open circle** on the control line and triggers the target when the control is `|0⟩`.
-* The code then builds `X–CNOT–X` on the control line (p. 59) and verifies the two operators are **identical** (`True`) — the notes identity.
+* The code then builds `X–CNOT–X` on the control line and verifies the two operators are **identical** (`True`) — the notes identity.
 
 ---
 
