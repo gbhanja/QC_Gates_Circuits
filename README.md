@@ -240,10 +240,10 @@ This is arguably the best-designed section of the notebook: prediction → quant
 
 ---
 
-## 11. Section 9 : The Quantum Fourier Transform circuit (Sec. 4.6) — p. 123 – 133
+## 11. Section 9 : The Quantum Fourier Transform circuit — (p. 123 – 133)
 
 ### 11.1 Building and drawing the QFT
-`qft_manual(n)` implements the notes' construction (Eq. 4.70–4.90, Fig. 4.4) directly:
+`qft_manual(n)` implements the notes' construction directly:
 ```
 for j in range(n):
     h(j);                       # Hadamard on j
@@ -251,25 +251,26 @@ for j in range(n):
         cp(2π / 2^(k-j+1), k, j)
 swaps to reverse the qubit order
 ```
-* **Circuit figure (p. 124):** `Manually-built QFT circuit for n = 3` — `H` on the first line, its `P(π/2)`, `P(π/4)` controls from below, then `H`s on the second line, the final `SWAP` between the outer lines. Exactly the textbook QFT ladder.
-* The notebook compares it with `qiskit.circuit.library.QFT(3)`. Printed result: **`Manual QFT matches Qiskit library QFT: False`** — see §14 below; this is expected and is a *convention* difference, not a physics error. (The library version, drawn on p. 124–125, has the same inverse-V pattern but puts the `H` at the *end* of each line with the control-phases accumulating the other way round, and the manual version's final `SWAP`s fix the ordering.)
+* **Circuit figure (p. 25):** *"Manually-built QFT circuit for n = 3"* (drawn twice) — `H` on the first line, its `P(π/2)`, `P(π/4)` controls from below, then `H`s on the second line, the final `SWAP` between the outer lines. Exactly the textbook QFT ladder. A Qiskit `DeprecationWarning` for `QFT(n)` is also printed here.
+* The notebook compares it with `qiskit.circuit.library.QFT(3)`. Printed result (p. 25): **`Manual QFT matches Qiskit library QFT: False`** — this is a *convention* difference (ordering of `H` vs. controlled-phases, and the final SWAP), not a physics error. The library version, drawn on p. 25–26 (*"Qiskit built-in QFT (decomposed) for comparison"*, shown twice), has the same inverse-V pattern but accumulates the control-phases in the other direction.
 
 ### 11.2 What the QFT does to a basis state
-* Circuit (p. 125–126): two `X` gates to set the register to `|3⟩`, then the manual QFT.
-* **Figure — amplitude bar chart (p. 126–127):** `|amplitude|²` vs basis index y for all 8 outcomes. **All eight bars are exactly equal (0.125)** and the title says it: *"QFT output: equal-magnitude superposition over all y, phase encodes x"*. The picture demonstrates the QFT's defining behaviour: amplitudes are uniform, **all the input information moves into the phases**.
-* **Q-sphere figure (p. 127–128):** eight nodes around the globe of equal size (all |amp|² = 1/8) but **different colours** — the phase wheel shows eight distinct hues, i.e. the phase `2π·x·y/8` winding around. This is the correct picture *for a normalised DFT*; see the caveat in §14 about the notebook's gate ordering.
-* **Histogram (p. 128–130):** "Measuring QFT output: flat distribution over all 2^n outcomes" — eight bars each ≈ 512 of 4096 shots. Because measurement discards phase, a QFT output always looks flat; the flat histogram is the honest illustration of "phases are invisible in a Z-basis measurement".
+* **Circuit (p. 26):** two `X` gates to set the register to `|3⟩`, then the manual QFT — *"Prepare basis state, then apply manual QFT"* (shown again on p. 27).
+* **Figure — amplitude bar chart (p. 27):** `|amplitude|²` vs basis index y for all 8 outcomes. **All eight bars are exactly equal (0.125)** and the title says it: *"QFT output: equal-magnitude superposition over all y, phase encodes x"*. The picture demonstrates the QFT's defining behaviour: amplitudes are uniform, **all the input information moves into the phases**.
+* **Q-sphere figure (p. 28, repeated p. 29):** eight nodes around the globe of equal size (all |amp|² = 1/8) but **different colours** — the phase wheel shows eight distinct hues, i.e. the phase `2π·x·y/8` winding around.
+* **Histogram (p. 30):** *"Measuring QFT output: flat distribution over all 2^n outcomes"*, with circuit *"Full circuit: state prep + QFT + measurement"* shown above it — eight bars of **513, 510, 508, 496, 539, 560, 489, 481** out of 4096 (labels `000`…`111`). Because measurement discards phase, a QFT output always looks flat; the flat histogram is the honest illustration of "phases are invisible in a Z-basis measurement".
 
-### 11.3 Period-finding demo (Sec. 4.3 example, Eq. 4.46–4.49) — p. 130 – 133
-* Circuit (p. 131): `H`s on the 3-bit register → a "naive oracle" (`cx(2, ancilla)`) → the manual `QFT` block → measure the register. Title: *"Period-finding style circuit, N = 8, true period P = 2"*.
-* **Histogram (p. 132–133):** counts `{'000': 2084, '001': 2012}` — peaks at the register values 0 and 4 = **N/P**, exactly as the notes' Eq. 4.48 predicts. The printed line repeats the theory: *"peaks should appear at y = 0 and y = N/2 = 4"*.
-> **Read this one carefully:** the plotting labels are Qiskit bit-strings (`'001'`), not integers, so the bar labelled `001` *is* the peak at y = 4 under the notebook's bit-ordering convention. Also, the "oracle" here is not a genuine period-2 oracle — see §14 for exactly what this demo does and doesn't show.
+### 11.3 Period-finding demo (Sec. 4.3 example, Eq. 4.46–4.49) — p. 31 – 33
+* **Text + repeated figures (p. 31):** *"Period-finding style demonstration (cf. Sec. 4.3 example, Eq. 4.46-4.49). We replicate the worked example of Sec. 4.3.1: a periodic function with period P=2 on n=3 bits..."* — the flat-distribution histogram and full circuit from p. 30 are shown again here before the new code, plus the setup `n_bits = 3; N = 8; P = 2`.
+* **Circuit (p. 32):** `H`s on the 3-bit register → a "naive oracle" (`cx(2, ancilla)`) → the manual `QFT` block → measure the register. Title: *"Period-finding style circuit, N = 8, true period P = 2"*.
+* **Histogram and conclusion (p. 33):** counts `{'000': 2084, '001': 2012}` — peaks at the register values 0 and 4 = **N/P**, exactly as the notes' Eq. 4.48 predicts. The printed line repeats the theory: *"Compare with theory (Eq. 4.48): peaks should appear at y = 0 and y = N/2 = 4"*.
+> **Read this one carefully:** the plotting labels are Qiskit bit-strings (`'001'`), not integers, so the bar labelled `001` *is* the peak at y = 4 under the notebook's bit-ordering convention. Also, the "oracle" here is not a genuine period-2 oracle — it's a single CNOT chosen to reproduce the worked example's counts, not a general period-finding black box.
 
 ---
 
-## 12. Summary table & exercises (p. 133 – 134)
+## 12. Summary table & exercises — (p. 34 – 35)
 
-The notebook closes with a **mapping table** (`Notes section → Gate(s) → Notebook section → What's new`) covering 3.1.1, 3.1.2, 3.1.3, 3.1.4, 3.1.5, 3.1.7, 3.2, 4.1.1, 4.6, and five **student exercises**:
+The notebook closes with a **mapping table** (`Notes section → Gate(s) → Notebook section → What's new`) covering 3.1.1, 3.1.2, 3.1.3, 3.1.4, 3.1.5, 3.1.7, 3.2, 4.1.1, 4.6 (split across p. 34 and p. 35, with the p. 33 period-finding histogram repeated once more above the table on p. 34), and five **student exercises** (p. 35):
 
 1. Repeat the phase-kickback scan with a Toffoli-controlled phase (2 controls).
 2. Extend Deutsch to 2-bit **Deutsch–Jozsa**; draw and measure all outputs.
@@ -285,12 +286,12 @@ The notebook closes with a **mapping table** (`Notes section → Gate(s) → Not
 |---|---|---|---|
 | **Circuit diagram** (`draw('mpl', style='bw')`) | Black-and-white boxes on horizontal wires, `q0/q1/…` labels | Everywhere (≈ 60 of them) | Boxes = gates, `●` filled dot = control active on `|1⟩`, `○` open dot = control on `|0⟩`, `⊕` = XOR target, `┼` = SWAP, `▧`=measurement box, `meas` = classical register |
 | **Bloch sphere** | Grey globe, magenta arrow, axes x/y/z, `|0⟩`/`|1⟩` poles | p. 12, 15, 18, 20, 22, 26, 28, 29, 32, 34, 37, 43 | Arrow direction = qubit state; rotation about z changes azimuth only; about x tilts it out of the equator; a pure phase gate leaves the arrow pointing at the same spot |
-| **Histogram** (`plot_histogram`) | Blue bars, count axis, title | ~70 panels (p. 7, 8, 24, 25, 30, 31, 38–40, 46–49, 53, 54, 57, 61–67, 70, 77–101, 103, 106–109, 115–122, 129, 132, 133) | One tall bar = deterministic outcome; two equal bars = 50/50 superposition; **missing** bars = outcomes forbidden by entanglement; flat bars = phase information destroyed by measurement |
+| **Histogram** (`plot_histogram`) | Blue bars, count axis, title | ~70 panels (p. 7, 8, 24, 25, 30, 31, 38–40, 46–49, 53, 54, 57, 61–67, 70, **plus, in the renumbered excerpt: pp. 1–2, 4, 7–10, 12–13, 17–23, 30, 31, 33–34**) | One tall bar = deterministic outcome; two equal bars = 50/50 superposition; **missing** bars = outcomes forbidden by entanglement; flat bars = phase information destroyed by measurement |
 | **State-city** (`plot_state_city`) | 3-D skyscraper bars over `\|00⟩…\|11⟩`, two colours = real/imag | p. 50 | Bar height = amplitude, colour = real (blue) vs imaginary; equal heights at `00` and `11` = Bell state |
-| **Q-sphere** (`plot_state_qsphere`) | Grey globe with coloured nodes + phase wheel | p. 50–51, 74–76, 127–128 | Node size = probability, node **colour = phase** (wheel: 0 → pink/red, π/2 → blue, π → green, 3π/2 → yellow); equal-phase nodes are the same colour |
+| **Q-sphere** (`plot_state_qsphere`) | Grey globe with coloured nodes + phase wheel | p. 50–51, 74–76 (original full export); **pp. 28–29 in the renumbered excerpt (QFT output)** | Node size = probability, node **colour = phase** (wheel: 0 → pink/red, π/2 → blue, π → green, 3π/2 → yellow); equal-phase nodes are the same colour |
 | **Polar plot** | Line of points on a circular grid | p. 43 | Radius = Bloch θ, angle = Bloch φ; shows the orbit of repeated `THTH` never closing |
-| **Line/scatter scan** | `P(control = 1)` vs α | p. 101 (from p. 76–77) | Rising to 1 at α = π = phase kickback; the full interference curve |
-| **Bar chart of probabilities** | `\|amplitude\|²` vs basis index | p. 126–127 | QFT output: all bars equal → information is in the phases |
+| **Line/scatter scan** | `P(control = 1)` vs α | original full export p. 101; **p. 2 (bottom) in the renumbered excerpt** | Rising to 1 at α = π = phase kickback; the full interference curve |
+| **Bar chart of probabilities** | `\|amplitude\|²` vs basis index | original full export p. 126–127; **p. 27 in the renumbered excerpt** | QFT output: all bars equal → information is in the phases |
 | **Tall decomposed circuit** | Very long multi-page circuit | p. 71–73 | `MCX` expanded into `u` + `cx` by the transpiler |
 
----
+> **On the duplicated page numbers above:** the renumbered excerpt (phase-kickback tail → no-cloning → Deutsch → QFT → summary) restarts its own page count at 1, so its citations (in **bold**) refer to *that* 35-page document, not the original full export used for Sections 1–7's citations.
