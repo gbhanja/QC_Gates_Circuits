@@ -284,13 +284,13 @@ The notebook closes with a **mapping table** (`Notes section → Gate(s) → Not
 ## 13. Figure-type index — what you are looking at
 
 | Figure type | Appearance | How to read it |
-|---|---|---|---|
+|---|---|---|
 | **Circuit diagram** (`draw('mpl', style='bw')`) | Black-and-white boxes on horizontal wires, `q0/q1/…` labels | Boxes = gates, `●` filled dot = control active on `|1⟩`, `○` open dot = control on `|0⟩`, `⊕` = XOR target, `┼` = SWAP, `▧`=measurement box, `meas` = classical register |
 | **Bloch sphere** | Grey globe, magenta arrow, axes x/y/z, `|0⟩`/`|1⟩` poles | Arrow direction = qubit state; rotation about z changes azimuth only; about x tilts it out of the equator; a pure phase gate leaves the arrow pointing at the same spot |
 | **Histogram** (`plot_histogram`) | Blue bars, count axis, title | One tall bar = deterministic outcome; two equal bars = 50/50 superposition; **missing** bars = outcomes forbidden by entanglement; flat bars = phase information destroyed by measurement |
 | **State-city** (`plot_state_city`) | 3-D skyscraper bars over `\|00⟩…\|11⟩`, two colours = real/imag | Bar height = amplitude, colour = real (blue) vs imaginary; equal heights at `00` and `11` = Bell state |
-| **Q-sphere** (`plot_state_qsphere`) | Grey globe with coloured nodes + phase wheel | p. 50–51, 74–76 (original full export); **pp. 28–29 in the renumbered excerpt (QFT output)** | Node size = probability, node **colour = phase** (wheel: 0 → pink/red, π/2 → blue, π → green, 3π/2 → yellow); equal-phase nodes are the same colour |
+| **Q-sphere** (`plot_state_qsphere`) | Grey globe with coloured nodes + phase wheel | Node size = probability, node **colour = phase** (wheel: 0 → pink/red, π/2 → blue, π → green, 3π/2 → yellow); equal-phase nodes are the same colour |
 | **Polar plot** | Line of points on a circular grid | Radius = Bloch θ, angle = Bloch φ; shows the orbit of repeated `THTH` never closing |
-| **Line/scatter scan** | `P(control = 1)` vs α | original full export p. 101; **p. 2 (bottom) in the renumbered excerpt** | Rising to 1 at α = π = phase kickback; the full interference curve |
+| **Line/scatter scan** | `P(control = 1)` vs α | Rising to 1 at α = π = phase kickback; the full interference curve |
 | **Bar chart of probabilities** | `\|amplitude\|²` vs basis index | QFT output: all bars equal → information is in the phases |
 | **Tall decomposed circuit** | Very long multi-page circuit | `MCX` expanded into `u` + `cx` by the transpiler |
