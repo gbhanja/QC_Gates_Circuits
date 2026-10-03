@@ -272,7 +272,7 @@ swaps to reverse the qubit order
 
 ## 12. Summary table & exercises 
 
-The notebook closes with a **mapping table** (`Notes section → Gate(s) → Notebook section → What's new`), and five **student exercises** :
+The notebook closes with a **mapping table** (`Notes section → Gate(s) → Notebook section → What's new`), and five **exercises** :
 
 1. Repeat the phase-kickback scan with a Toffoli-controlled phase (2 controls).
 2. Extend Deutsch to 2-bit **Deutsch–Jozsa**; draw and measure all outputs.
