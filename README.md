@@ -45,11 +45,11 @@ It is deliberately organised to *section numbering*, and it ends with a mapping 
 
 ---
 
-## 2. Section 1 — The general single-qubit gate (Eq. 3.1 – 3.8) — p. 4 – 9
+## 2. Section 1 — The general single-qubit gate — (p. 4 – 9)
 
 ### 2.1 The physics being tested
 Any single-qubit evolution with Hamiltonian `H = h₀·I + β n·σ` gives, up to global phase,
-`U = exp(iα)·Rn(η)`, with `Rn(η) = cos(η/2)·I − i sin(η/2)(n·σ)` (Eq. 3.6–3.8). `Rn(η)` **rotates the Bloch vector by η anticlockwise about axis n**.
+`U = exp(iα)·Rn(η)`, with `Rn(η) = cos(η/2)·I − i sin(η/2)(n·σ)`. `Rn(η)` **rotates the Bloch vector by η anticlockwise about axis n**.
 
 ### 2.2 What the code does
 * Defines `Rn_matrix(n, eta)` — literally implements Eq. 3.8 with the three Pauli matrices. This is the "theory" version.
@@ -69,12 +69,12 @@ Circuits: `H` then `Rz(π/2)`; and the same followed by another `H` before measu
 
 ---
 
-## 3. Section 1.1 — Rn(η) ⇔ rotation of the Bloch vector (Eq. 3.9 – 3.21) — p. 10 – 19
+## 3. Section 1.1 — Rn(η) ⇔ rotation of the Bloch vector — (p. 10 – 19)
 
 Checks two of the notes' identities by watching the Bloch pointer move:
 
-* `Rz(η)|θ,φ⟩ = |θ, φ+η⟩` (Eq. 3.13–3.15)
-* `Rx(η)|θ,π/2⟩ = |θ−η, π/2⟩` (Eq. 3.19–3.21)
+* `Rz(η)|θ,φ⟩ = |θ, φ+η⟩` 
+* `Rx(η)|θ,π/2⟩ = |θ−η, π/2⟩` 
 
 **Rz experiment (θ = π/3, φ = π/5, η = π/2):**
 * Circuit (p. 11): `q: ─Ry(π/3)─Rz(π/5)─` labelled *"State-preparation circuit for |θ,φ⟩"* — note it uses `Ry` to set θ and `Rz` to set φ, the standard way to reach any `|θ,φ⟩`.
@@ -93,42 +93,42 @@ This is the cleanest "one row of figures = one equation" demonstration in the wh
 
 ---
 
-## 4. Section 2 — The elementary single-qubit gates (Sec. 3.1.2) — p. 20 – 39
+## 4. Section 2 — The elementary single-qubit gates — (p. 20 – 39)
 
 A single generic helper, `gate_report(name, build_fn, eq_ref, input_label)`, produces for each gate: circuit drawing → the gate **matrix** → the output **statevector** → the **Bloch sphere** of `G|input⟩`. Then, separately, a **measurement histogram**.
 
-### 4.1 X gate (Eq. 3.28–3.31) — p. 20 – 25
+### 4.1 X gate — (p. 20 – 25)
 * Circuit (p. 21, 23): `q: ─X─`; matrix `[[0,1],[1,0]]`; `X|0⟩ = |1⟩` (p. 22).
 * **Bloch sphere "X|0⟩ on Bloch sphere" (p. 22):** arrow points straight **down** to `|1⟩` at the south pole — the π-rotation about x.
 * **Measurement circuit (p. 23):** `─X─ ▧ ─M─` (gate + measurement box) and the **histogram (p. 24–25) "X|0⟩ measurement: always 1"** — one bar of height **2048/2048**. Because `X|0⟩` is a computational basis state, measurement is deterministic: the classic "single spike" signature.
 
-### 4.2 Y gate (Eq. 3.32–3.35) — p. 25 – 26
+### 4.2 Y gate — (p. 25 – 26)
 * Matrix `[[0,−i],[i,0]]`, `Y|0⟩ = i|1⟩`.
 * **Bloch sphere "Y|0⟩" (p. 26):** again straight down to `|1⟩` — because `Y|0⟩ = i|1⟩` differs from `|1⟩` by the global phase `i`, which the Bloch sphere (correctly) cannot show. A neat, non-obvious illustration that global phase is unobservable.
 
-### 4.3 Z gate (Eq. 3.36–3.39) — p. 27 – 30
+### 4.3 Z gate — (p. 27 – 30)
 * Input chosen as `|1⟩`: matrix `diag(1,−1)`, `Z|1⟩ = −|1⟩`.
 * **Bloch sphere "Z|1⟩" (p. 28–29):** looks exactly like plain `|1⟩` — the minus sign is a *global* phase for this input.
 * The notebook then does the **H–Z–H trick (p. 30):** `─H─Z─H─` converts the invisible phase flip into a bit flip: `HZH|0⟩ = |1⟩`.
 * **Histogram (p. 31) "H–Z–H |0⟩: should measure |1⟩ deterministically"** — single bar at `1`, 2048/2048. This is the first *interference* demonstration in the notebook.
 
-### 4.4 T (π/8) gate (Eq. 3.40–3.43) — p. 31 – 33
+### 4.4 T (π/8) gate — (p. 31 – 33)
 * Input `|1⟩`; matrix `diag(1, e^{iπ/4})`, i.e. `T|1⟩ = (0.707+0.707i)|1⟩`.
 * The code independently rebuilds the notes' formula `T = e^{iπ/8}(cos(π/8)·I − i sin(π/8)·Z)` and prints **"Matches Qiskit T gate: True"** (p. 32). This is exactly the "π/8 gate" naming justification *and* the statement that `T` is an `Rz(π/4)` up to global phase.
 * **Bloch sphere "T|1⟩" (p. 32–33):** still the south pole — same "invisible phase" story as Y and Z.
 
-### 4.5 S gate (Eq. 3.44–3.48) — p. 33 – 35
+### 4.5 S gate — (p. 33 – 35)
 * `S = diag(1, i)`; check `T·T == S` → printed **True** (p. 35); circuit `─T─T─` is drawn next to `─S─` as a visual proof that the two circuits are the same operator.
 * **Bloch sphere "S|1⟩" (p. 34–35):** again the south pole (phase-only gate).
 
-### 4.6 Hadamard gate (Eq. 3.49–3.55) — p. 36 – 39
+### 4.6 Hadamard gate — (p. 36 – 39)
 * Matrix `(1/√2)[[1,1],[1,−1]]`; the code verifies the notes' Pauli form `H = (X+Z)/√2` (Eq. 3.52) → **True** (p. 37).
 * **Bloch sphere "H|0⟩" (p. 37):** arrow points to the **+x axis** — the "half-way between x and z" π-rotation about the (x+z)/√2 axis, giving `|+⟩`.
 * **Measurement circuit (p. 38) and histogram (p. 38–40) "H|0⟩ measurement: expect ~50/50 split":** bars of **2071** and **2025** out of 4096. Unlike the previous deterministic spikes, this is the genuinely random, quantum result — the notebook's first "real" quantum statistics.
 
 ---
 
-## 5. Section 3 — Universal single-qubit gates: H and T (Sec. 3.1.3) — p. 40 – 43
+## 5. Section 3 — Universal single-qubit gates: H and T gates — (p. 40 – 43)
 
 **Physics:** repeated `H` and `T` generate a *dense* set of rotations, so any single-qubit unitary can be approximated to arbitrary accuracy (the notes' Eq. 3.56–3.71).
 
@@ -141,7 +141,7 @@ A single generic helper, `gate_report(name, build_fn, eq_ref, input_label)`, pro
 
 ---
 
-## 6. Section 4 — Multi-qubit states and controlled gates (Sec. 3.1.4) — p. 43 – 59
+## 6. Section 4 — Multi-qubit states and controlled gates — (p. 43 – 59)
 
 **Definition under test (Eq. 3.81):** `CU|a,b⟩ = U^{a}|a,b⟩` — apply `U` to the target *only* when the control is 1.
 
@@ -150,7 +150,7 @@ The H matrix is wrapped as `UnitaryGate(...).control(1)` and appended as a 2-qub
 * **Circuit figure (p. 44):** `q0: ─●─` / `q1: ─H─` with the standard filled control dot.
 * Printed table for all four inputs (order of the printed vector is Qiskit's little-endian `|00⟩,|01⟩,|10⟩,|11⟩`): `CU|00⟩=|00⟩`, `CU|01⟩=(|01⟩+|11⟩)/√2`, `CU|10⟩=|10⟩`, `CU|11⟩=(|01⟩−|11⟩)/√2`. I re-ran this and it matches exactly — the control is qubit 0, so nothing happens for the `q0=0` inputs.
 
-### 6.2 CNOT / Controlled-X (Eq. 3.82) — p. 44 – 49
+### 6.2 CNOT / Controlled-X — (p. 44 – 49)
 * Circuit `q0: ─●─`, `q1: ─⊕─` (p. 44–45, drawn twice).
 * **Truth table by measurement (p. 45):** for each `(a,b)` the code prepares the input with `X`s, applies CNOT, measures with 256 shots, and prints the counts:
   `00→{00}`, `01→{10}`, `10→{11}`, `11→{01}` — exactly `b_out = a XOR b`, each a **single 256-count bar** (four histogram figures on p. 46–49, "Measurement outcomes"). Doing the truth table *by measured statistics* rather than by matrix algebra is the most important pedagogical upgrade in the notebook.
@@ -161,7 +161,7 @@ The H matrix is wrapped as `UnitaryGate(...).control(1)` and appended as a 2-qub
 * **Figure — Q-sphere (p. 50–51):** a globe where each basis state is a node; node size = |amplitude|², node *colour* = phase (colour wheel: 0 → red/pink, π/2 → blue, π → cyan/green, 3π/2 → yellow). You see exactly two equally big nodes, `|00⟩` at the top and `|11⟩` at the bottom, **both the same colour** → the two amplitudes have the same phase. It is the standard "this is a maximally entangled 2-qubit state" picture.
 * **Histograms (p. 53–54):** "Bell state measurement: only 00 and 11 appear (perfect correlation)", counts `{'00': 2048, '11': 2048}` — the two outcomes that never appear (`01`, `10`) *don't exist at all* in the plot. That absence is the fingerprint of entanglement.
 
-### 6.4 SWAP (Eq. 3.83–3.85, Fig. 3.10) — p. 55 – 57
+### 6.4 SWAP gate — (p. 55 – 57)
 * Circuit (p. 55–56): `X` on q0 (prepare `|q1q0⟩ = |01⟩`), barrier, then **three CNOTs** `cx(0,1), cx(1,0), cx(0,1)`.
 * **Histogram (p. 57):** counts `{'10': 2048}` — a single spike. Input was q0=1, q1=0; after the swap q0=0, q1=1, which Qiskit reports as the string `'10'`. Perfect exchange.
 > **Subtlety worth flagging:** the notes (Eq. 3.83–3.85) give *three* equivalent three-CNOT identities, one for each pair `(a,b)` of the input. The notebook only implements and verifies the `(|01⟩,|10⟩)` version. Also, the "different" constructions differ only because of the CNOT **direction convention** — don't be confused if the notes' picture looks like a different CNOT ordering.
@@ -185,7 +185,7 @@ The H matrix is wrapped as `UnitaryGate(...).control(1)` and appended as a 2-qub
 
 ---
 
-## 8. Section 6 — Controlled-phase and phase kickback (Sec. 3.1.7) — p. 73 – 103
+## 8. Section 6 — Controlled-phase and phase kickback — (p. 73 – 103)
 
 **Physics (Eq. 3.100):** `CP(α)` adds the phase `e^{iα}` **only** to the `|11⟩` component. Because the phase sits on a *product* state, it can be reinterpreted as a phase on the control → *phase kickback*.
 
@@ -196,7 +196,7 @@ The H matrix is wrapped as `UnitaryGate(...).control(1)` and appended as a 2-qub
 
 ---
 
-## 9. Section 7 — The no-cloning theorem (Sec. 3.2) — p. 104 – 112
+## 9. Section 7 — The no-cloning theorem — (p. 104 – 112)
 
 **Physics (Eq. 3.176–3.178):** no unitary can copy an arbitrary unknown `|ψ⟩`, because unitaries are linear and the "cloning" map is not.
 
@@ -219,7 +219,7 @@ This is arguably the best-designed section of the notebook: prediction → quant
 
 ---
 
-## 10. Section 8 : Deutsch's algorithm (Sec. 4.1.1) — p. 112 – 123
+## 10. Section 8 : Deutsch's algorithm — (p. 112 – 123)
 
 **Physics (Eq. 4.9–4.14):** with the oracle `U_f|x⟩|y⟩ = |x⟩|y ⊕ f(x)⟩`, the circuit `X(anc) · H ⊗ H · U_f · H(register)` gives `|0⟩` if `f` is constant and `|1⟩` if `f` is balanced — decided with **one** query.
 
