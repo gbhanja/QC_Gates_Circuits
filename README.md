@@ -6,13 +6,13 @@
 
 ## 0. The big idea of the notebook
 
-The lecture notes contain the *theory* (equations Eq. 3.1 … 3.178, Fig. 3.10 … 3.15). This notebook is the **experimental counterpart**: for almost every equation in those chapters it does three things —
+The lecture notes contain the *theory* (equations Eq. 3.1 … 3.178, Fig. 3.10 … 3.15). This notebook is the **experimental counterpart**: for almost every equation in those chapter it does three things —
 
 1. **Builds the circuit** in Qiskit and draws it with the matplotlib circuit drawer (`style={'name':'bw'}` → the black-and-white boxes you see everywhere).
 2. **Visualises the state** on the Bloch sphere / state-city / Q-sphere, or plots the amplitude/phase directly with matplotlib.
 3. **Measures it** — appends `measure_all()`, runs on `AerSimulator` (2048 or 4096 shots), and shows a **counts histogram**. This turns every mathematical claim into an observable experimental result (probabilities, phases made visible, truth tables, no-cloning failure, etc.).
 
-It is deliberately organised to *mirror the notes' section numbering* (3.1.1, 3.1.2, 3.1.3, 3.1.4, 3.1.5, 3.1.7, 3.2, 4.1.1, 4.6), and it ends with a mapping table and student exercises.
+It is deliberately organised to *section numbering*, and it ends with a mapping table and student exercises.
 
 ### How to read the rest of this document
 
