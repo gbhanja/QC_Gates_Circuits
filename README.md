@@ -6,7 +6,7 @@
 
 ## 0. The big idea of the notebook
 
-The lecture notes contain the *theory* (equations Eq. 3.1 … 3.178, Fig. 3.10 … 3.15). This notebook is the **experimental counterpart**: for almost every equation in those chapter it does three things —
+This notebook is the **experimental counterpart**: for almost every equation in those chapter it does three things —
 
 1. **Builds the circuit** in Qiskit and draws it with the matplotlib circuit drawer (`style={'name':'bw'}` → the black-and-white boxes you see everywhere).
 2. **Visualises the state** on the Bloch sphere / state-city / Q-sphere, or plots the amplitude/phase directly with matplotlib.
@@ -22,16 +22,16 @@ It is deliberately organised to *section numbering*, and it ends with a mapping 
 
 ---
 
-## 1. Front matter and setup (p. 1 – 4)
+## 1. Front matter and setup 
 
 **Contents**
 * Title, provenance (based on `PH 643: Quantum Information and Computation course Notes`), and credits: IBM Qiskit Community tutorials, *Coding With Qiskit* ep. 4 (Gates), *Teach Me Quantum* 2018, Qiskit/qiskit-tutorials, IBM Quantum Learning.
-* The `pip install qiskit qiskit-aer matplotlib numpy pylatexenc` cell **including all its console output** (that's why pages 1–2 are full of "Requirement already satisfied") — typical of an exported notebook where output was never cleared.
+* The `pip install qiskit qiskit-aer matplotlib numpy pylatexenc` cell, **including all its console output** (that's why it's full of "Requirement already satisfied") — typical of an exported notebook where output was never cleared.
 * A numbered reference list.
 
-**The toolkit cell (p. 2–4)** imports `numpy`, `matplotlib`, `QuantumCircuit`, `transpile`, and from `qiskit.quantum_info`: `Statevector`, `Operator`, `DensityMatrix`, `state_fidelity`; from `qiskit.visualization`: `plot_bloch_multivector`, `plot_bloch_vector`, `plot_histogram`, `plot_state_city`, `plot_state_qsphere`; from `qiskit.circuit.library`: `QFT`, `UnitaryGate`, `MCXGate`. `AerSimulator` is wrapped in a `try/except` so the notebook still runs (minus measurement cells) if Aer is missing. It prints `Qiskit environment ready. Aer available: True`.
+**The toolkit cell ** imports `numpy`, `matplotlib`, `QuantumCircuit`, `transpile`, and from `qiskit.quantum_info`: `Statevector`, `Operator`, `DensityMatrix`, `state_fidelity`; from `qiskit.visualization`: `plot_bloch_multivector`, `plot_bloch_vector`, `plot_histogram`, `plot_state_city`, `plot_state_qsphere`; from `qiskit.circuit.library`: `QFT`, `UnitaryGate`, `MCXGate`. `AerSimulator` is wrapped in a `try/except` so the notebook still runs (minus measurement cells) if Aer is missing. It prints `Qiskit environment ready. Aer available: True`.
 
-**Section 0 — Visualisation Toolkit (p. 3–4)**, four helper functions reused everywhere:
+**Section 0 — Visualisation Toolkit**, four helper functions reused everywhere:
 
 | Helper | What it does |
 |---|---|
@@ -52,16 +52,16 @@ Any single-qubit evolution with Hamiltonian `H = h₀·I + β n·σ` gives, up t
 `U = exp(iα)·Rn(η)`, with `Rn(η) = cos(η/2)·I − i sin(η/2)(n·σ)`. `Rn(η)` **rotates the Bloch vector by η anticlockwise about axis n**.
 
 ### 2.2 What the code does
-* Defines `Rn_matrix(n, eta)` — literally implements Eq. 3.8 with the three Pauli matrices. This is the "theory" version.
+* Defines `Rn_matrix(n, eta)` — literally implements with the three Pauli matrices. This is the "theory" version.
 * Defines `equal_up_to_phase(A, B)` — checks two unitaries are equal modulo a global phase (needed because Qiskit's `Rz` is the notes' `Rn` *only up to phase*).
 * Builds `Rz(0.7)` in Qiskit and compares its `Operator` matrix with `Rn_matrix([0,0,1], 0.7)`.
 
-**Printed result (p. 5):** both matrices are `diag(0.939−0.343i, 0.939+0.343i)` → `Match: True`. So **Qiskit's `Rz(η)` = the notes' `Rn(η)` about n = ẑ**.
+**Printed result :** both matrices are `diag(0.939−0.343i, 0.939+0.343i)` → `Match: True`. So **Qiskit's `Rz(η)` = the notes' `Rn(η)` about n = ẑ**.
 
 ### 2.3 Z-basis vs X-basis measurement 
 Circuits: `H` then `Rz(π/2)`; and the same followed by another `H` before measurement.
 
-* Figure (p. 5–6, 2 blocks): **circuit diagram** `q: ─H─Rz(π/2)─` — a state-prep H (to make |+⟩) and the phase gate, plus a second circuit `─H─Rz(π/2)─H─M─` for the basis-change version.
+* Figure : **circuit diagram** `q: ─H─Rz(π/2)─` — a state-prep H (to make |+⟩) and the phase gate, plus a second circuit `─H─Rz(π/2)─H─M─` for the basis-change version.
 * **Figure — "Z-basis measurement: 50/50, Rz phase invisible here" (p. 7):** two bars ≈ 1002 and 1046 out of 2048. This is the central lesson of phase gates: `Rz` multiplies a *relative phase*, and a Z-basis measurement cannot see relative phase, so the statistics are an uninformative 50/50.
 * **Figure — "X-basis measurement: Rz phase now visible" (p. 8):** again ≈ 1032/1016 — still ~50/50 because π/2 happens to be a special angle; but the *point* (that the H before detection rotates phase information into Z-basis probabilities) is made by the two circuits shown on p. 9 ("Full circuit with basis-change + measurement" — H, Rz, barrier, H, measure, showing both the `meas` register and how the measurement is attached).
 
@@ -77,17 +77,17 @@ Checks two of the notes' identities by watching the Bloch pointer move:
 * `Rx(η)|θ,π/2⟩ = |θ−η, π/2⟩` 
 
 **Rz experiment (θ = π/3, φ = π/5, η = π/2):**
-* Circuit (p. 11): `q: ─Ry(π/3)─Rz(π/5)─` labelled *"State-preparation circuit for |θ,φ⟩"* — note it uses `Ry` to set θ and `Rz` to set φ, the standard way to reach any `|θ,φ⟩`.
+* Circuit : `q: ─Ry(π/3)─Rz(π/5)─` labelled *"State-preparation circuit for |θ,φ⟩"* — note it uses `Ry` to set θ and `Rz` to set φ, the standard way to reach any `|θ,φ⟩`.
 * **Bloch sphere "Before Rz(eta)" (p. 12):** the whole sphere is tilted so that the north pole reads `|0⟩` (that is the state-prep `Rz(π/5)` — exactly the φ-shift the notes predict); then the notebook applies `Rz(η)`.
-* Circuit (p. 13–14): `─Ry(π/3)─Rz(π/5)─Rz(π/2)─`.
-* **Bloch sphere "After Rz(eta)" (p. 15):** the arrow points at the **equator**, i.e. θ is unchanged and only the azimuth moved. This is the graphic proof of Eq. 3.13–3.15.
-* Printed check (p. 15): `θ: 1.047 → 1.047 (unchanged)` and `φ: 0.628 → 2.199 = φ + η mod 2π`. ✔
+* Circuit : `─Ry(π/3)─Rz(π/5)─Rz(π/2)─`.
+* **Bloch sphere "After Rz(eta)" (p. 15):** the arrow points at the **equator**, i.e. θ is unchanged and only the azimuth moved. This is the graphic proof.
+* Printed check : `θ: 1.047 → 1.047 (unchanged)` and `φ: 0.628 → 2.199 = φ + η mod 2π`. ✔
 
 **Rx experiment (θ = 2π/5, φ = π/2, η = π/4):**
-* Circuit (p. 16): `─Ry(2π/5)─Rz(π/2)─Rx(π/4)─`.
+* Circuit : `─Ry(2π/5)─Rz(π/2)─Rx(π/4)─`.
 * **Bloch sphere "Before Rx(eta)" (p. 18):** arrow on the −x axis, in the y–z plane (φ = π/2) — expected from `Ry`+`Rz(π/2)`.
 * **Bloch sphere "After Rx(eta)" (p. 19):** arrow now tilted up toward the north pole/​+z direction — a rotation about the x-axis, so the y-component has vanished: the state has left the equator.
-* Printed check (p. 16): `θ: 1.257 → 0.471 = θ − η` ✔ and `φ: 1.571 → 1.571` (unchanged, = π/2) ✔.
+* Printed check : `θ: 1.257 → 0.471 = θ − η` ✔ and `φ: 1.571 → 1.571` (unchanged, = π/2) ✔.
 
 This is the cleanest "one row of figures = one equation" demonstration in the whole notebook.
 
@@ -98,28 +98,28 @@ This is the cleanest "one row of figures = one equation" demonstration in the wh
 A single generic helper, `gate_report(name, build_fn, eq_ref, input_label)`, produces for each gate: circuit drawing → the gate **matrix** → the output **statevector** → the **Bloch sphere** of `G|input⟩`. Then, separately, a **measurement histogram**.
 
 ### 4.1 X gate 
-* Circuit (p. 21, 23): `q: ─X─`; matrix `[[0,1],[1,0]]`; `X|0⟩ = |1⟩`.
+* Circuit : `q: ─X─`; matrix `[[0,1],[1,0]]`; `X|0⟩ = |1⟩`.
 * **Bloch sphere "X|0⟩ on Bloch sphere" (p. 22):** arrow points straight **down** to `|1⟩` at the south pole — the π-rotation about x.
-* **Measurement circuit (p. 23):** `─X─ ▧ ─M─` (gate + measurement box) and the **histogram (p. 24–25) "X|0⟩ measurement: always 1"** — one bar of height **2048/2048**. Because `X|0⟩` is a computational basis state, measurement is deterministic: the classic "single spike" signature.
+* **Measurement circuit :** `─X─ ▧ ─M─` (gate + measurement box) and the **histogram (p. 24–25) "X|0⟩ measurement: always 1"** — one bar of height **2048/2048**. Because `X|0⟩` is a computational basis state, measurement is deterministic: the classic "single spike" signature.
 
 ### 4.2 Y gate 
 * Matrix `[[0,−i],[i,0]]`, `Y|0⟩ = i|1⟩`.
-* **Bloch sphere "Y|0⟩" (p. 26):** again straight down to `|1⟩` — because `Y|0⟩ = i|1⟩` differs from `|1⟩` by the global phase `i`, which the Bloch sphere (correctly) cannot show. A neat, non-obvious illustration that global phase is unobservable.
+* **Bloch sphere "Y|0⟩" :** again straight down to `|1⟩` — because `Y|0⟩ = i|1⟩` differs from `|1⟩` by the global phase `i`, which the Bloch sphere (correctly) cannot show. A neat, non-obvious illustration that global phase is unobservable.
 
 ### 4.3 Z gate 
 * Input chosen as `|1⟩`: matrix `diag(1,−1)`, `Z|1⟩ = −|1⟩`.
-* **Bloch sphere "Z|1⟩" (p. 28–29):** looks exactly like plain `|1⟩` — the minus sign is a *global* phase for this input.
-* The notebook then does the **H–Z–H trick (p. 30):** `─H─Z─H─` converts the invisible phase flip into a bit flip: `HZH|0⟩ = |1⟩`.
-* **Histogram (p. 31) "H–Z–H |0⟩: should measure |1⟩ deterministically"** — single bar at `1`, 2048/2048. This is the first *interference* demonstration in the notebook.
+* **Bloch sphere "Z|1⟩" :** looks exactly like plain `|1⟩` — the minus sign is a *global* phase for this input.
+* The notebook then does the **H–Z–H trick :** `─H─Z─H─` converts the invisible phase flip into a bit flip: `HZH|0⟩ = |1⟩`.
+* **Histogram "H–Z–H |0⟩: should measure |1⟩ deterministically"** — single bar at `1`, 2048/2048. This is the first *interference* demonstration in the notebook.
 
 ### 4.4 T (π/8) gate 
 * Input `|1⟩`; matrix `diag(1, e^{iπ/4})`, i.e. `T|1⟩ = (0.707+0.707i)|1⟩`.
 * The code independently rebuilds the notes' formula `T = e^{iπ/8}(cos(π/8)·I − i sin(π/8)·Z)` and prints **"Matches Qiskit T gate: True"** (p. 32). This is exactly the "π/8 gate" naming justification *and* the statement that `T` is an `Rz(π/4)` up to global phase.
-* **Bloch sphere "T|1⟩" (p. 32–33):** still the south pole — same "invisible phase" story as Y and Z.
+* **Bloch sphere "T|1⟩" :** still the south pole — same "invisible phase" story as Y and Z.
 
 ### 4.5 S gate 
-* `S = diag(1, i)`; check `T·T == S` → printed **True** (p. 35); circuit `─T─T─` is drawn next to `─S─` as a visual proof that the two circuits are the same operator.
-* **Bloch sphere "S|1⟩" (p. 34–35):** again the south pole (phase-only gate).
+* `S = diag(1, i)`; check `T·T == S` → printed **True** ; circuit `─T─T─` is drawn next to `─S─` as a visual proof that the two circuits are the same operator.
+* **Bloch sphere "S|1⟩" :** again the south pole (phase-only gate).
 
 ### 4.6 Hadamard gate 
 * Matrix `(1/√2)[[1,1],[1,−1]]`; the code verifies the notes' Pauli form `H = (X+Z)/√2`  → **True** ).
@@ -134,7 +134,7 @@ A single generic helper, `gate_report(name, build_fn, eq_ref, input_label)`, pro
 
 **What the code does**
 * Builds `H·T·H` and verifies `HTH = e^{iπ/8}(cos(π/8)I − i sin(π/8)X)`. Printed matrices **match exactly** . Circuits shown as `─H─T─H─`.
-* Builds `T·H·T·H` — note that the code is written *in reverse notation order* (`h; t; h; t` → circuit left-to-right is `H–T–H–T`, which as an operator product is `T·H·T·H`), computes `η = 2·arccos(cos²(π/8)) = 1.09606`, notes `η/π = 0.348886` is irrational (so the rotation angle is never a rational multiple of π → the orbit never closes), and verifies `THTH = Rp(η)` **up to global phase** with the notes' axis `p = (cos π/8, sin π/8, cos π/8)`. Printed **True** (p. 42).
+* Builds `T·H·T·H` — note that the code is written *in reverse notation order* (`h; t; h; t` → circuit left-to-right is `H–T–H–T`, which as an operator product is `T·H·T·H`), computes `η = 2·arccos(cos²(π/8)) = 1.09606`, notes `η/π = 0.348886` is irrational (so the rotation angle is never a rational multiple of π → the orbit never closes), and verifies `THTH = Rp(η)` **up to global phase** with the notes' axis `p = (cos π/8, sin π/8, cos π/8)`. Printed **True**.
 * **Figure — polar plot "theta vs phi after 1..12 applications of T.H.T.H" :** a 2-D polar scatter/line plot where the radius is the Bloch **θ** and the angle is the Bloch **φ** for 1, 2, …, 12 repetitions of `THTH`, starting from `|+⟩`. It draws a **spiral that keeps stepping around without repeating** — the visual argument for "dense coverage of the sphere ⇒ universality". It is the only polar plot in the notebook.
 
 > **Caveat I verified:** "η/π is irrational" is asserted numerically, not proved; and 12 points can't *show* dense coverage. It's a nice heuristic picture, not a proof (the notes prove it via the algebraic structure of the rotation).
@@ -143,7 +143,7 @@ A single generic helper, `gate_report(name, build_fn, eq_ref, input_label)`, pro
 
 ## 6. Section 4 — Multi-qubit states and controlled gates 
 
-**Definition under test (Eq. 3.81):** `CU|a,b⟩ = U^{a}|a,b⟩` — apply `U` to the target *only* when the control is 1.
+**Definition under test :** `CU|a,b⟩ = U^{a}|a,b⟩` — apply `U` to the target *only* when the control is 1.
 
 ### 6.1 Controlled-H 
 The H matrix is wrapped as `UnitaryGate(...).control(1)` and appended as a 2-qubit gate.
@@ -157,7 +157,7 @@ The H matrix is wrapped as `UnitaryGate(...).control(1)` and appended as a 2-qub
 
 ### 6.3 Bell state 
 * Circuit : `q0: ─H─●─`, `q1: ───⊕─`.
-* **Figure — state-city plot (p. 50, image at 1539×803 px):** the 3-D "city" of amplitudes, real and imaginary, over the four basis states. Only the `|00⟩` and `|11⟩` skyscrapers of height 1/√2 ≈ 0.707 stand, and they are **blue = purely real, phase 0**. It shows directly that the state is `(|00⟩+|11⟩)/√2` with no relative phase.
+* **Figure — state-city plot :** the 3-D "city" of amplitudes, real and imaginary, over the four basis states. Only the `|00⟩` and `|11⟩` skyscrapers of height 1/√2 ≈ 0.707 stand, and they are **blue = purely real, phase 0**. It shows directly that the state is `(|00⟩+|11⟩)/√2` with no relative phase.
 * **Figure — Q-sphere :** a globe where each basis state is a node; node size = |amplitude|², node *colour* = phase (colour wheel: 0 → red/pink, π/2 → blue, π → cyan/green, 3π/2 → yellow). You see exactly two equally big nodes, `|00⟩` at the top and `|11⟩` at the bottom, **both the same colour** → the two amplitudes have the same phase. It is the standard "this is a maximally entangled 2-qubit state" picture.
 * **Histograms :** "Bell state measurement: only 00 and 11 appear (perfect correlation)", counts `{'00': 2048, '11': 2048}` — the two outcomes that never appear (`01`, `10`) *don't exist at all* in the plot. That absence is the fingerprint of entanglement.
 
