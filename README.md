@@ -39,7 +39,7 @@ It is deliberately organised to *section numbering*, and it ends with a mapping 
 | `show_bloch(sv, title)` | `plot_bloch_multivector(sv)` → one Bloch sphere per qubit |
 | `measure_and_plot(qc, shots=2048, title)` | copies `qc`, calls `measure_all()`, `transpile`s, runs on Aer, returns `(counts, histogram_figure, measured_circuit)` |
 | `compare_bloch(sv_in, sv_out, …)` | intended as a side-by-side before/after Bloch figure |
-| `bloch_angles(sv)` (defined later, p. 15) | converts a statevector into the Bloch angles θ, φ via the density matrix: `x=2Re ρ₀₁`, `y=2Im ρ₁₀`, `z=ρ₀₀−ρ₁₁` |
+| `bloch_angles(sv)` (defined later) | converts a statevector into the Bloch angles θ, φ via the density matrix: `x=2Re ρ₀₁`, `y=2Im ρ₁₀`, `z=ρ₀₀−ρ₁₁` |
 
 > **Note:** `compare_bloch` is effectively dead code — it creates a 2-axis figure, immediately `plt.close`s it, then returns two *separate* figures. The notebook never actually uses it (the before/after comparisons are done as two `show_bloch` calls instead). It's harmless but a leftover.
 
@@ -62,7 +62,7 @@ Any single-qubit evolution with Hamiltonian `H = h₀·I + β n·σ` gives, up t
 Circuits: `H` then `Rz(π/2)`; and the same followed by another `H` before measurement.
 
 * Figure : **circuit diagram** `q: ─H─Rz(π/2)─` — a state-prep H (to make |+⟩) and the phase gate, plus a second circuit `─H─Rz(π/2)─H─M─` for the basis-change version.
-* **Figure — "Z-basis measurement: 50/50, Rz phase invisible here" (p. 7):** two bars ≈ 1002 and 1046 out of 2048. This is the central lesson of phase gates: `Rz` multiplies a *relative phase*, and a Z-basis measurement cannot see relative phase, so the statistics are an uninformative 50/50.
+* **Figure — "Z-basis measurement: 50/50, Rz phase invisible here" :** two bars ≈ 1002 and 1046 out of 2048. This is the central lesson of phase gates: `Rz` multiplies a *relative phase*, and a Z-basis measurement cannot see relative phase, so the statistics are an uninformative 50/50.
 * **Figure — "X-basis measurement: Rz phase now visible" (p. 8):** again ≈ 1032/1016 — still ~50/50 because π/2 happens to be a special angle; but the *point* (that the H before detection rotates phase information into Z-basis probabilities) is made by the two circuits shown on p. 9 ("Full circuit with basis-change + measurement" — H, Rz, barrier, H, measure, showing both the `meas` register and how the measurement is attached).
 
 **Take-away:** the notebook immediately establishes the theme it returns to repeatedly — *phases are invisible unless you interfere them.*
@@ -78,15 +78,15 @@ Checks two of the notes' identities by watching the Bloch pointer move:
 
 **Rz experiment (θ = π/3, φ = π/5, η = π/2):**
 * Circuit : `q: ─Ry(π/3)─Rz(π/5)─` labelled *"State-preparation circuit for |θ,φ⟩"* — note it uses `Ry` to set θ and `Rz` to set φ, the standard way to reach any `|θ,φ⟩`.
-* **Bloch sphere "Before Rz(eta)" (p. 12):** the whole sphere is tilted so that the north pole reads `|0⟩` (that is the state-prep `Rz(π/5)` — exactly the φ-shift the notes predict); then the notebook applies `Rz(η)`.
+* **Bloch sphere "Before Rz(eta)" :** the whole sphere is tilted so that the north pole reads `|0⟩` (that is the state-prep `Rz(π/5)` — exactly the φ-shift the notes predict); then the notebook applies `Rz(η)`.
 * Circuit : `─Ry(π/3)─Rz(π/5)─Rz(π/2)─`.
-* **Bloch sphere "After Rz(eta)" (p. 15):** the arrow points at the **equator**, i.e. θ is unchanged and only the azimuth moved. This is the graphic proof.
+* **Bloch sphere "After Rz(eta)" :** the arrow points at the **equator**, i.e. θ is unchanged and only the azimuth moved. This is the graphic proof.
 * Printed check : `θ: 1.047 → 1.047 (unchanged)` and `φ: 0.628 → 2.199 = φ + η mod 2π`. ✔
 
 **Rx experiment (θ = 2π/5, φ = π/2, η = π/4):**
 * Circuit : `─Ry(2π/5)─Rz(π/2)─Rx(π/4)─`.
-* **Bloch sphere "Before Rx(eta)" (p. 18):** arrow on the −x axis, in the y–z plane (φ = π/2) — expected from `Ry`+`Rz(π/2)`.
-* **Bloch sphere "After Rx(eta)" (p. 19):** arrow now tilted up toward the north pole/​+z direction — a rotation about the x-axis, so the y-component has vanished: the state has left the equator.
+* **Bloch sphere "Before Rx(eta)" :** arrow on the −x axis, in the y–z plane (φ = π/2) — expected from `Ry`+`Rz(π/2)`.
+* **Bloch sphere "After Rx(eta)" :** arrow now tilted up toward the north pole/​+z direction — a rotation about the x-axis, so the y-component has vanished: the state has left the equator.
 * Printed check : `θ: 1.257 → 0.471 = θ − η` ✔ and `φ: 1.571 → 1.571` (unchanged, = π/2) ✔.
 
 This is the cleanest "one row of figures = one equation" demonstration in the whole notebook.
@@ -99,8 +99,8 @@ A single generic helper, `gate_report(name, build_fn, eq_ref, input_label)`, pro
 
 ### 4.1 X gate 
 * Circuit : `q: ─X─`; matrix `[[0,1],[1,0]]`; `X|0⟩ = |1⟩`.
-* **Bloch sphere "X|0⟩ on Bloch sphere" (p. 22):** arrow points straight **down** to `|1⟩` at the south pole — the π-rotation about x.
-* **Measurement circuit :** `─X─ ▧ ─M─` (gate + measurement box) and the **histogram (p. 24–25) "X|0⟩ measurement: always 1"** — one bar of height **2048/2048**. Because `X|0⟩` is a computational basis state, measurement is deterministic: the classic "single spike" signature.
+* **Bloch sphere "X|0⟩ on Bloch sphere" :** arrow points straight **down** to `|1⟩` at the south pole — the π-rotation about x.
+* **Measurement circuit :** `─X─ ▧ ─M─` (gate + measurement box) and the **histogram "X|0⟩ measurement: always 1"** — one bar of height **2048/2048**. Because `X|0⟩` is a computational basis state, measurement is deterministic: the classic "single spike" signature.
 
 ### 4.2 Y gate 
 * Matrix `[[0,−i],[i,0]]`, `Y|0⟩ = i|1⟩`.
@@ -114,7 +114,7 @@ A single generic helper, `gate_report(name, build_fn, eq_ref, input_label)`, pro
 
 ### 4.4 T (π/8) gate 
 * Input `|1⟩`; matrix `diag(1, e^{iπ/4})`, i.e. `T|1⟩ = (0.707+0.707i)|1⟩`.
-* The code independently rebuilds the notes' formula `T = e^{iπ/8}(cos(π/8)·I − i sin(π/8)·Z)` and prints **"Matches Qiskit T gate: True"** (p. 32). This is exactly the "π/8 gate" naming justification *and* the statement that `T` is an `Rz(π/4)` up to global phase.
+* The code independently rebuilds the notes' formula `T = e^{iπ/8}(cos(π/8)·I − i sin(π/8)·Z)` and prints **"Matches Qiskit T gate: True"**. This is exactly the "π/8 gate" naming justification *and* the statement that `T` is an `Rz(π/4)` up to global phase.
 * **Bloch sphere "T|1⟩" :** still the south pole — same "invisible phase" story as Y and Z.
 
 ### 4.5 S gate 
@@ -176,7 +176,7 @@ The H matrix is wrapped as `UnitaryGate(...).control(1)` and appended as a 2-qub
 
 ### 7.1 Toffoli (CCX) :
 * Circuit: `q0: ─●─`, `q1: ─●─`, `q2: ─⊕─`.
-* **Truth table by measurement (p. 60):** all 8 inputs, 256 shots each, single spikes: `c_out = c XOR (a AND b)` — the target flips only for `a=b=1`. Seven pages of "Measurement outcomes" histograms each with one bar.
+* **Truth table by measurement :** all 8 inputs, 256 shots each, single spikes: `c_out = c XOR (a AND b)` — the target flips only for `a=b=1`. Seven pages of "Measurement outcomes" histograms each with one bar.
 
 ### 7.2 Multi-controlled-X (Cn) :
 * `MCXGate(4)` with all four controls preset to `|1⟩` via `X` gates (circuit, the classic 5-line fan-in picture).
@@ -189,8 +189,8 @@ The H matrix is wrapped as `UnitaryGate(...).control(1)` and appended as a 2-qub
 **Physics :** `CP(α)` adds the phase `e^{iα}` **only** to the `|11⟩` component. Because the phase sits on a *product* state, it can be reinterpreted as a phase on the control → *phase kickback*.
 
 * Circuit : `q0: ─H─●─H─` (control in superposition) and `q1: ─X─P(α)─` (target in `|1⟩`), i.e. `H`, `CP(α)`, `H`.
-* **Q-sphere figure (p. 74–76):** two nodes of equal size, `|10⟩` at the equator (control=1… in Qiskit's ordering `|q1q0⟩`) and `|11⟩` at the bottom. Crucially they now have **different colours**: `|10⟩` is blue (phase 0) while `|11⟩` is purple (phase π/3 = 60°) — the phase wheel in the corner lets you read the kicked-back phase α directly off the picture. Printed check: `measured relative phase = 1.0471975511965976 = π/3 = α` ✔.
-* **Figure — the phase-kickback interference scan (p. 76–77, plot on p. 101):** α is swept over 25 values from 0 to 2π; for each, the notebook runs `H–CP(α)–H` on the control, measures, and plots `P(control = 1)` vs α. The curve is **1 − cos²(...)**-shaped: it starts at 0, rises to a **maximum of 1.0 at α = π**, and returns to 0 at 2π. This single plot is the whole section: the phase α — which is *completely unobservable* in any Z-basis measurement of the target — becomes a full-swing probability on the control. (This is the mechanism behind phase-estimation and nearly every phase-based quantum algorithm.)
+* **Q-sphere figure :** two nodes of equal size, `|10⟩` at the equator (control=1… in Qiskit's ordering `|q1q0⟩`) and `|11⟩` at the bottom. Crucially they now have **different colours**: `|10⟩` is blue (phase 0) while `|11⟩` is purple (phase π/3 = 60°) — the phase wheel in the corner lets you read the kicked-back phase α directly off the picture. Printed check: `measured relative phase = 1.0471975511965976 = π/3 = α` ✔.
+* **Figure — the phase-kickback interference scan :** α is swept over 25 values from 0 to 2π; for each, the notebook runs `H–CP(α)–H` on the control, measures, and plots `P(control = 1)` vs α. The curve is **1 − cos²(...)**-shaped: it starts at 0, rises to a **maximum of 1.0 at α = π**, and returns to 0 at 2π. This single plot is the whole section: the phase α — which is *completely unobservable* in any Z-basis measurement of the target — becomes a full-swing probability on the control. (This is the mechanism behind phase-estimation and nearly every phase-based quantum algorithm.)
 * **Example histogram :** with α = π/2 the outcome is a genuine 50/50 (968 vs 1080). At α = 0 the plot shows a clean 2048–0, and near α = π a clean 0–2048 (the histograms are the 24 individual runs behind the scan).
 
 ---
@@ -224,7 +224,7 @@ This is arguably the best-designed section of the notebook: prediction → quant
 
 * `deutsch_oracle(kind)` builds all four single-bit oracles: `constant_0` (do nothing), `constant_1` (`X` on the ancilla), `balanced_identity` (`CNOT`), `balanced_not` (`CNOT` then `X`).
 * `deutsch_circuit(kind)` wraps the oracle in a labelled `U_f` box with `H`s, barriers and a single measurement on the register qubit.
-* **Circuit figures (p. 113–114):** four diagrams, `Deutsch algorithm circuit — f = constant_0 / constant_1 / balanced_identity / balanced_not`, each showing the `Uf[...]` block between two Hadamard layers and the single classical bit `c`. Register qubit `q0` carries the top `H`, the ancilla `q1` carries `X` then `H` (the `|−⟩` preparation of Eq. 4.11), and only `q0` is measured.
+* **Circuit figures :** four diagrams, `Deutsch algorithm circuit — f = constant_0 / constant_1 / balanced_identity / balanced_not`, each showing the `Uf[...]` block between two Hadamard layers and the single classical bit `c`. Register qubit `q0` carries the top `H`, the ancilla `q1` carries `X` then `H` (the `|−⟩` preparation), and only `q0` is measured.
   * For `f = constant_0` the oracle box is (correctly) **empty** — "do nothing" *is* the constant-0 oracle, since `f(x) = 0` means `y ⊕ 0 = y`. This is easy to misread as a missing gate; it isn't.
 * **Histograms :** four "Measurement outcomes" plots, each a **single 2048 bar**:
 
@@ -262,9 +262,9 @@ swaps to reverse the qubit order
 * **Histogram (p. 30):** *"Measuring QFT output: flat distribution over all 2^n outcomes"*, with circuit *"Full circuit: state prep + QFT + measurement"* shown above it — eight bars of **513, 510, 508, 496, 539, 560, 489, 481** out of 4096 (labels `000`…`111`). Because measurement discards phase, a QFT output always looks flat; the flat histogram is the honest illustration of "phases are invisible in a Z-basis measurement".
 
 ### 11.3 Period-finding demo 
-* **Text + repeated figures :** *"Period-finding style demonstration (cf. Sec. 4.3 example, Eq. 4.46-4.49). We replicate the worked example of Sec. 4.3.1: a periodic function with period P=2 on n=3 bits..."* — the flat-distribution histogram and full circuit from p. 30 are shown again here before the new code, plus the setup `n_bits = 3; N = 8; P = 2`.
-* **Circuit (p. 32):** `H`s on the 3-bit register → a "naive oracle" (`cx(2, ancilla)`) → the manual `QFT` block → measure the register. Title: *"Period-finding style circuit, N = 8, true period P = 2"*.
-* **Histogram and conclusion :** counts `{'000': 2084, '001': 2012}` — peaks at the register values 0 and 4 = **N/P**, exactly as the notes' Eq. 4.48 predicts. The printed line repeats the theory: *"Compare with theory (Eq. 4.48): peaks should appear at y = 0 and y = N/2 = 4"*.
+* **Text + repeated figures :** *"Period-finding style demonstration. A periodic function with period P=2 on n=3 bits..."* — the flat-distribution histogram and full circuit are shown again here before the new code, plus the setup `n_bits = 3; N = 8; P = 2`.
+* **Circuit :** `H`s on the 3-bit register → a "naive oracle" (`cx(2, ancilla)`) → the manual `QFT` block → measure the register. Title: *"Period-finding style circuit, N = 8, true period P = 2"*.
+* **Histogram and conclusion :** counts `{'000': 2084, '001': 2012}` — peaks at the register values 0 and 4 = **N/P**, exactly as the notes predicts. The printed line repeats the theory: *"Compare with theory: peaks should appear at y = 0 and y = N/2 = 4"*.
 > **Read this one carefully:** the plotting labels are Qiskit bit-strings (`'001'`), not integers, so the bar labelled `001` *is* the peak at y = 4 under the notebook's bit-ordering convention. Also, the "oracle" here is not a genuine period-2 oracle — it's a single CNOT chosen to reproduce the worked example's counts, not a general period-finding black box.
 
 ---
